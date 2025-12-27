@@ -19,6 +19,7 @@ Thanks to [Themezer](https://themezer.net/) for providing the public API; withou
 ## Installation
 1. Download the latest release from the [Releases](https://github.com/xziip/utheme/releases) page
 2. Extract `UTheme.wuhb` to `sd:/wiiu/apps/`
+(It will automatically download the [StyleMiiU](https://github.com/Themiify-hb/StyleMiiU-Plugin) plugin on first launch. This plugin allows you to easily load custom themes.)
 
 ## Screenshots
 
@@ -109,4 +110,4 @@ If you encounter any issues or have questions:
 - Open an [issue](https://github.com/xziip/utheme/issues) on github.
 
 ## Support Me
-Support me on ko-fi: https://ko-fi.com/xziip
+Support me on [ko-fi](https://ko-fi.com/xziip)
