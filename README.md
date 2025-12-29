@@ -100,6 +100,17 @@ sd:/
                           # BGM source : Shop - nico's nextbots
 ```
 
+## Credits
+- [LingoBrew](https://github.com/xziip/LingoBrew) Most of the app's core functionality is based on LingoBrew.
+- [Themiify](https://github.com/Themiify-hb/Themiify). The app's patch and installation functionality is based on Themiify.
+- [WiiUIdent](https://github.com/GaryOderNichts/WiiUIdent). The GUI is based on WiiUIdent.
+- [YveltalGriffin](https://github.com/mackieks) for creating [haxcopy](https://github.com/mackieks/haxcopy). The app is also based on haxcopy.
+- [FontAwesome](https://fontawesome.com/) for the icons.
+- [libwebp](https://github.com/webmproject/libwebp) Provides webp decoding functionality.
+- [MiniZIP](https://github.com/madler/zlib/tree/master/contrib/minizip) Provide .utheme file decompression functionality
+- [Hips](https://github.com/wheremyfoodat/Hips) Provide patch functionality.
+- [Themezer](https://themezer.net/) for providing the public API.
+- [Terminus Font](https://terminus-font.sourceforge.net/) for the monospace font.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
