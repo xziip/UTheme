@@ -104,7 +104,7 @@ sd:/
 - [LingoBrew](https://github.com/xziip/LingoBrew) Most of the app's core functionality is based on LingoBrew.
 - [Themiify](https://github.com/Themiify-hb/Themiify). The app's patch and installation functionality is based on Themiify.
 - [WiiUIdent](https://github.com/GaryOderNichts/WiiUIdent). The GUI is based on WiiUIdent.
-- [YveltalGriffin](https://github.com/mackieks) for creating [haxcopy](https://github.com/mackieks/haxcopy). The app is also based on haxcopy.
+- [haxcopy](https://github.com/mackieks/haxcopy). The app is also based on haxcopy.
 - [FontAwesome](https://fontawesome.com/) for the icons.
 - [libwebp](https://github.com/webmproject/libwebp) Provides webp decoding functionality.
 - [MiniZIP](https://github.com/madler/zlib/tree/master/contrib/minizip) Provide .utheme file decompression functionality
