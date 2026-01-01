@@ -55,30 +55,44 @@ void AboutScreen::Draw() {
     Gfx::DrawIcon(leftCardX + 40, yOff, 48, Gfx::COLOR_ACCENT, 0xf007, Gfx::ALIGN_VERTICAL);
     Gfx::Print(leftCardX + 110, yOff, 44, Gfx::COLOR_TEXT, _("about.credits"), Gfx::ALIGN_VERTICAL);
     
-    yOff += 80;
-    Gfx::Print(leftCardX + 60, yOff, 38, Gfx::COLOR_WHITE, "UTheme", Gfx::ALIGN_VERTICAL);
-    
-    yOff += 60;
+    yOff += 70;
     SDL_Color noteColor = Gfx::COLOR_ALT_TEXT;
-    Gfx::Print(leftCardX + 60, yOff, 28, noteColor, _("about.based_on"), Gfx::ALIGN_VERTICAL);
-    yOff += 40;
-    Gfx::Print(leftCardX + 80, yOff, 26, noteColor, "  WiiUCrashLogDumper by Maschell", Gfx::ALIGN_VERTICAL);
-    yOff += 35;
-    Gfx::Print(leftCardX + 80, yOff, 26, noteColor, "  WiiUIdent by GaryOderNichts", Gfx::ALIGN_VERTICAL);
-    yOff += 35;
-    Gfx::Print(leftCardX + 80, yOff, 26, noteColor, "  Haxcopy by YveltalGriffin", Gfx::ALIGN_VERTICAL);
+    
+    // 主要贡献项目
+    Gfx::Print(leftCardX + 60, yOff, 26, noteColor, "LingoBrew - Core functionality", Gfx::ALIGN_VERTICAL);
+    yOff += 32;
+    Gfx::Print(leftCardX + 60, yOff, 26, noteColor, "Themiify - Patch & install system", Gfx::ALIGN_VERTICAL);
+    yOff += 32;
+    Gfx::Print(leftCardX + 60, yOff, 26, noteColor, "WiiUIdent - GUI framework", Gfx::ALIGN_VERTICAL);
+    yOff += 32;
+    Gfx::Print(leftCardX + 60, yOff, 26, noteColor, "haxcopy - Additional features", Gfx::ALIGN_VERTICAL);
+    
+    yOff += 45;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, "Themezer - API provider", Gfx::ALIGN_VERTICAL);
+    
+    // 库和工具
+    yOff += 50;
+    Gfx::DrawIcon(leftCardX + 40, yOff, 40, Gfx::COLOR_ICON, 0xf1b2, Gfx::ALIGN_VERTICAL);
+    Gfx::Print(leftCardX + 100, yOff, 36, Gfx::COLOR_TEXT, "Libraries & Tools", Gfx::ALIGN_VERTICAL);
+    
+    yOff += 50;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, "libwebp - Image decoding", Gfx::ALIGN_VERTICAL);
+    yOff += 30;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, "MiniZIP - Archive handling", Gfx::ALIGN_VERTICAL);
+    yOff += 30;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, "Hips - Patch system", Gfx::ALIGN_VERTICAL);
     
     // 字体信息
-    yOff += 80;
-    Gfx::DrawIcon(leftCardX + 40, yOff, 44, Gfx::COLOR_ICON, 0xf031, Gfx::ALIGN_VERTICAL);
-    Gfx::Print(leftCardX + 110, yOff, 40, Gfx::COLOR_TEXT, _("about.fonts"), Gfx::ALIGN_VERTICAL);
+    yOff += 50;
+    Gfx::DrawIcon(leftCardX + 40, yOff, 40, Gfx::COLOR_ICON, 0xf031, Gfx::ALIGN_VERTICAL);
+    Gfx::Print(leftCardX + 100, yOff, 36, Gfx::COLOR_TEXT, _("about.fonts"), Gfx::ALIGN_VERTICAL);
     
-    yOff += 60;
-    Gfx::Print(leftCardX + 60, yOff, 28, noteColor, std::string("  ") + _("about.system_font"), Gfx::ALIGN_VERTICAL);
-    yOff += 35;
-    Gfx::Print(leftCardX + 60, yOff, 28, noteColor, std::string("  ") + _("about.fontawesome"), Gfx::ALIGN_VERTICAL);
-    yOff += 35;
-    Gfx::Print(leftCardX + 60, yOff, 28, noteColor, std::string("  ") + _("about.terminus"), Gfx::ALIGN_VERTICAL);
+    yOff += 50;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, std::string("  ") + _("about.system_font"), Gfx::ALIGN_VERTICAL);
+    yOff += 30;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, std::string("  ") + _("about.fontawesome"), Gfx::ALIGN_VERTICAL);
+    yOff += 30;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, std::string("  ") + _("about.terminus"), Gfx::ALIGN_VERTICAL);
     
     // 右侧卡片 - 源代码
     int rightCardX = leftCardX + leftCardW + cardSpacing;
