@@ -66,7 +66,7 @@ void AboutScreen::Draw() {
     Gfx::Print(leftCardX + 60, yOff, 26, noteColor, _("about.wiiuident"), Gfx::ALIGN_VERTICAL);
     yOff += 32;
     Gfx::Print(leftCardX + 60, yOff, 26, noteColor, _("about.haxcopy"), Gfx::ALIGN_VERTICAL);
-    yOff += 45;
+    yOff += 32;
     Gfx::Print(leftCardX + 60, yOff, 24, noteColor, _("about.themezer"), Gfx::ALIGN_VERTICAL);
     
     // 库和工具
