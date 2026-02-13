@@ -50,12 +50,12 @@
       "maxDisplayCount": 0
     },
     {
-      "id": "007",
+      "id": "1145",
       "type": "info",
       "title": "",
       "text": "こんにちは、世界！안녕하세요 세계! Bonjour le monde!",
-      "duration": 8000,
-      "maxDisplayCount": 0
+      "duration": 80000,
+      "maxDisplayCount": 1
     }
   ]
 }
