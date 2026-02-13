@@ -3,22 +3,32 @@
     {
       "id": "001",
       "type": "info",
-      "text": "hello world"
+      "text": "hello world",
+      "duration": 5000
     },
     {
       "id": "002",
       "type": "update",
-      "text": "testing notifications"
+      "text": "testing notifications",
+      "duration": 7000
     },
     {
       "id": "003",
       "type": "warning",
-      "text": "中文测试"
+      "text": "中文测试",
+      "duration": 6000
     },
     {
       "id": "004",
       "type": "warning",
-      "text": "Special characters: !@#$%^&*()_+-=[]{}|;':\",.<>/?`~"
+      "text": "Special characters: !@#$%^&*()_+-=[]{}|;':\",.<>/?`~",
+      "duration": 8000
+    },
+    {
+      "id": "005",
+      "type": "error",
+      "text": "Error test message",
+      "duration": 6000
     }
   ]
 }
