@@ -50,12 +50,21 @@
       "maxDisplayCount": 0
     },
     {
-      "id": "1145",
+      "id": "textonly",
       "type": "info",
       "title": "",
-      "text": "こんにちは、世界！안녕하세요 세계! Bonjour le monde!",
+      "text": "こんにちは、世界！안녕하세요 세계! Bonjour le monde1!",
       "duration": 80000,
       "maxDisplayCount": 1
+    },
+    {
+      "id": "??!!:",
+      "type": "info",
+      "title": "",
+      "text": "",
+      "duration": 8000000000000000000000000000000000000,
+      "maxDisplayCount": 2
     }
+    
   ]
 }
