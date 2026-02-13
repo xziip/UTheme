@@ -58,11 +58,11 @@
       "maxDisplayCount": 1
     },
     {
-      "id": "??!!:",
+      "id": "emptytest",
       "type": "info",
       "title": "",
       "text": "",
-      "duration": 99991,
+      "duration": 9999,
       "maxDisplayCount": 2
     }
     
