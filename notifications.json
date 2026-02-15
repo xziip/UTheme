@@ -1,7 +1,7 @@
 {
   "messages": [
     {
-      "id": "001",
+      "id": "welcome",
       "type": "info",
       "title": "Welcome to UTheme!",
       "text": "If you like the app, please star it on GitHub and share it with your friends!",
@@ -9,7 +9,7 @@
       "maxDisplayCount": 1
     },
     {
-      "id": "002",
+      "id": "help1",
       "type": "info",
       "title": "Need Help?",
       "text": "If you have any issues or suggestions, feel free to open an issue on the GitHub repository.",
