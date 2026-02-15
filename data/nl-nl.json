@@ -36,7 +36,9 @@
     "search_clear": "Wissen",
     "search_results": "resultaten",
     "search_keyboard_hint": "Zoeken op naam, auteur, tags of T+ID (bijv. T1, auteur, tag)",
-    "random_theme": "Willekeurig Thema"
+    "random_theme": "Willekeurig Thema",
+    "disk_space_low": "Onvoldoende ruimte ({space}MB). Wis cache in Instellingen.",
+    "disk_space_check_failed": "Kan schijfruimte niet controleren. Controleer SD-kaart of schakel logging in."
   },
   "theme_detail": {
     "by": "Door:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "Wil je dit instellen als je nieuwe Wii U-menuthema?",
     "setting_current": "Huidig thema instellen...",
     "set_current_complete": "Huidig thema bijgewerkt!",
+    "set_current_error": "Kan thema niet instellen!",
+    "check_log": "Controleer logbestand: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "Weet je zeker dat je dit thema wilt verwijderen?",
     "uninstalling": "Thema verwijderen...",
     "uninstall_complete": "Verwijdering voltooid!",
@@ -153,7 +157,9 @@
     "libraries": "Bibliotheken en Tools",
     "libwebp": "libwebp - Afbeeldingsdecodering",
     "minizip": "MiniZIP - Archiefverwerking",
-    "hips": "Hips - Patchsysteem"
+    "hips": "Hips - Patchsysteem",
+    "rapidjson": "RapidJSON - JSON-parsing",
+    "nathaniel": "Nathaniel - Patchverbeteringen en StyleMiiu-integratie"
   },
   "common": {
     "initializing": "Initialiseren...",

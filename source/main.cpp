@@ -15,6 +15,7 @@
 #include "utils/RemoteNotification.hpp"
 #include "utils/DownloadQueue.hpp"
 #include <coreinit/title.h>
+#include <coreinit/launch.h>
 #include <memory>
 #include <padscore/kpad.h>
 #include <sndcore2/core.h>
@@ -205,6 +206,12 @@ int main(int argc, char const *argv[]) {
     // Cleanup music player
     MusicPlayer::GetInstance().Shutdown();
     
+    // 检查主题是否被更改（在关闭日志前检查）
+    bool themeChanged = Config::GetInstance().IsThemeChanged();
+    if (themeChanged) {
+        FileLogger::GetInstance().LogInfo("Theme was changed, will perform soft reboot on exit");
+    }
+    
     // Cleanup
     FileLogger::GetInstance().LogInfo("UTheme shutting down");
     FileLogger::GetInstance().EndLog();
@@ -224,7 +231,11 @@ int main(int argc, char const *argv[]) {
             // legacy way, just quit
             return 0;
         } else {
-            // launch menu otherwise
+            // 如果主题被更改,软重启以应用新主题
+            if (themeChanged) {
+                OSForceFullRelaunch();
+            }
+            // launch menu
             SYSLaunchMenu();
         }
     }

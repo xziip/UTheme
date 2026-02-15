@@ -36,7 +36,9 @@
     "search_clear": "清除",
     "search_results": "個結果",
     "search_keyboard_hint": "搜尋主題名稱、作者、標籤或 T+ID (例如: T1, 作者名, 標籤)",
-    "random_theme": "隨機主題"
+    "random_theme": "隨機主題",
+    "disk_space_low": "儲存空間不足 ({space}MB)，請在設定中清理快取",
+    "disk_space_check_failed": "無法檢測儲存空間。請檢查SD卡是否正常，或在設定中啟用日誌查看詳情"
   },
   "theme_detail": {
     "by": "作者:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "您要將此設為新的 Wii U 選單主題嗎?",
     "setting_current": "正在設定目前主題...",
     "set_current_complete": "目前主題已更新!",
+    "set_current_error": "設定失敗!",
+    "check_log": "請檢查日誌: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "確定要解除安裝此主題嗎?",
     "uninstalling": "正在解除安裝主題...",
     "uninstall_complete": "解除安裝完成!",
@@ -153,7 +157,9 @@
     "libraries": "程式庫和工具",
     "libwebp": "libwebp - 圖片解碼",
     "minizip": "MiniZIP - 封存處理",
-    "hips": "Hips - 修補程式系統"
+    "hips": "Hips - 修補程式系統",
+    "rapidjson": "RapidJSON - JSON 解析",
+    "nathaniel": "Nathaniel - 修補程式改進和 StyleMiiu 整合"
   },
   "common": {
     "initializing": "正在初始化...",

@@ -6,10 +6,10 @@
 #include <cstring>
 #include <cstdio>
 #include <sys/stat.h>
-#include <sys/statvfs.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <unistd.h>
+#include <coreinit/filesystem.h>
 
 #define THEMES_BASE_PATH "fs:/vol/external01/wiiu/themes"
 
@@ -234,11 +234,24 @@ void ThemeDownloader::DownloadThreadFunc(const std::string& url, const std::stri
     
     // 检查磁盘空间
     long long availableMB = GetAvailableDiskSpaceMB();
+    
+    if (availableMB < 0) {
+        // 无法检测磁盘空间
+        mErrorMessage = "[[disk_space_check_failed]]";
+        FileLogger::GetInstance().LogError("Failed to check disk space");
+        mState.store(DOWNLOAD_ERROR);
+        if (mStateCallback) {
+            mStateCallback(DOWNLOAD_ERROR, mErrorMessage);
+        }
+        return;
+    }
+    
     FileLogger::GetInstance().LogInfo("Available disk space: %lld MB", availableMB);
     
     if (availableMB < 100) {
-        mErrorMessage = "Disk space low (" + std::to_string(availableMB) + "MB). Please clear cache in Settings.";
-        FileLogger::GetInstance().LogWarning("%s", mErrorMessage.c_str());
+        // 磁盘空间不足
+        mErrorMessage = "[[disk_space_low:" + std::to_string(availableMB) + "]]";
+        FileLogger::GetInstance().LogWarning("Disk space low: %lld MB", availableMB);
         mState.store(DOWNLOAD_ERROR);
         if (mStateCallback) {
             mStateCallback(DOWNLOAD_ERROR, mErrorMessage);
@@ -584,18 +597,48 @@ void ThemeDownloader::CleanupDownload() {
 }
 
 long long ThemeDownloader::GetAvailableDiskSpaceMB() {
-    struct statvfs stat;
-    
-    // 检查 SD 卡挂载点
-    if (statvfs("fs:/vol/external01", &stat) != 0) {
-        FileLogger::GetInstance().LogError("[GetAvailableDiskSpaceMB] Failed to get disk stats");
+    FSClient* fsClient = (FSClient*)malloc(sizeof(FSClient));
+    if (!fsClient) {
+        FileLogger::GetInstance().LogError("[GetAvailableDiskSpaceMB] Failed to allocate FSClient");
         return -1;
     }
     
-    // 计算可用空间 (MB)
-    // f_bavail: 可用块数, f_frsize: 块大小
-    unsigned long long availableBytes = (unsigned long long)stat.f_bavail * stat.f_frsize;
-    long long availableMB = availableBytes / (1024 * 1024);
+    FSStatus addClientStatus = FSAddClient(fsClient, FS_ERROR_FLAG_NONE);
+    if (addClientStatus != FS_STATUS_OK) {
+        FileLogger::GetInstance().LogError("[GetAvailableDiskSpaceMB] FSAddClient failed with status %d", addClientStatus);
+        free(fsClient);
+        return -1;
+    }
     
-    return availableMB;
+    FSCmdBlock* cmdBlock = (FSCmdBlock*)malloc(sizeof(FSCmdBlock));
+    if (!cmdBlock) {
+        FileLogger::GetInstance().LogError("[GetAvailableDiskSpaceMB] Failed to allocate FSCmdBlock");
+        FSDelClient(fsClient, FS_ERROR_FLAG_NONE);
+        free(fsClient);
+        return -1;
+    }
+    
+    FSInitCmdBlock(cmdBlock);
+    
+    uint64_t freeSpace = 0;
+    FSStatus fsStatus = FSGetFreeSpaceSize(fsClient, 
+                                           cmdBlock,
+                                           "/vol/external01", 
+                                           &freeSpace,
+                                           FS_ERROR_FLAG_ALL);
+    
+    free(cmdBlock);
+    FSDelClient(fsClient, FS_ERROR_FLAG_NONE);
+    free(fsClient);
+    
+    if (fsStatus >= 0) {
+        long long availableMB = (long long)(freeSpace / (1024 * 1024));
+        FileLogger::GetInstance().LogInfo("[GetAvailableDiskSpaceMB] ✓ FSGetFreeSpaceSize: %llu bytes (%lld MB)",
+                                         (unsigned long long)freeSpace, availableMB);
+        return availableMB;
+    }
+    
+    FileLogger::GetInstance().LogError("[GetAvailableDiskSpaceMB] FSGetFreeSpaceSize failed with status %d (0x%X)", 
+                                      fsStatus, (unsigned int)fsStatus);
+    return -1;
 }

@@ -39,6 +39,10 @@ public:
     bool HasShownLanguageSwitchHint() const { return mHasShownLanguageSwitchHint; }
     void SetLanguageSwitchHintShown(bool shown);
     
+    // 主题更改标志（不保存到配置文件，仅运行时使用）
+    bool IsThemeChanged() const { return mThemeChanged; }
+    void SetThemeChanged(bool changed) { mThemeChanged = changed; }
+    
     // 加载/保存配置
     bool Load();
     bool Save();
@@ -58,5 +62,6 @@ private:
     std::string mBgmUrl;            // BGM下载地址
     bool mHasShownTouchHint;        // 是否已显示触摸提示
     bool mHasShownLanguageSwitchHint; // 是否已显示语言切换提示
+    bool mThemeChanged;             // 主题是否被更改（运行时标志）
     std::string mConfigPath;
 };

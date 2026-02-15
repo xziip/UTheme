@@ -34,6 +34,10 @@ private:
         STATE_UNINSTALL_CONFIRM,  // 卸载确认对话框
         STATE_UNINSTALLING,        // 正在卸载
         STATE_UNINSTALL_COMPLETE,  // 卸载完成
+        STATE_SET_CURRENT_CONFIRM, // 设置当前主题确认对话框
+        STATE_SETTING_CURRENT,     // 正在设置当前主题
+        STATE_SET_CURRENT_COMPLETE,// 设置完成
+        STATE_SET_CURRENT_ERROR,   // 设置失败
         STATE_FULLSCREEN_PREVIEW   // 全屏预览模式
     };
     

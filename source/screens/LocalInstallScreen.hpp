@@ -35,6 +35,7 @@ private:
         STATE_FILE_LIST,         // 显示文件列表
         STATE_CONFIRM_INSTALL,   // 确认安装对话框
         STATE_INSTALLING,        // 正在安装
+        STATE_NUS_CONFIRM,       // NUS下载确认对话框
         STATE_INSTALL_COMPLETE,  // 安装完成
         STATE_INSTALL_ERROR,     // 安装失败
         STATE_EMPTY              // 没有找到.utheme文件
@@ -64,6 +65,12 @@ private:
     std::string mInstallError;
     std::string mInstalledThemeName;
     
+    // NUS下载确认
+    std::atomic<bool> mNUSConfirmPending{false};
+    std::atomic<bool> mNUSConfirmResult{false};
+    std::string mNUSConfirmTitle;
+    std::string mNUSConfirmMessage;
+    
     // 安装线程
     std::thread mInstallThread;
     std::atomic<bool> mInstallThreadRunning{false};
@@ -87,6 +94,7 @@ private:
     void DrawInstallProgress();
     void DrawInstallResult();
     void DrawEmptyState();
+    void DrawNUSConfirmDialog();
     
     void StartInstall();
     void PerformInstall(); // 在线程中执行

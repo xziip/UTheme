@@ -2,6 +2,7 @@
 #include "Screen.hpp"
 #include "../utils/Animation.hpp"
 #include "../utils/ThemeManager.hpp"
+#include "../utils/BgmNotification.hpp"
 #include <string>
 #include <vector>
 #include <thread>
@@ -12,6 +13,7 @@ struct LocalTheme {
     std::string name;
     std::string path;
     std::string id;
+    std::string shortId;  // 短ID，用于T+ID搜索
     std::string author;
     std::string description;
     int downloads;
@@ -67,6 +69,11 @@ private:
     int mRepeatDelay = 30;  // 初始延迟帧数 (约0.5秒)
     int mRepeatRate = 6;    // 重复间隔帧数 (约0.1秒)
     
+    // 搜索功能
+    std::string mSearchText;
+    bool mSearchActive = false;
+    std::vector<size_t> mFilteredIndices;  // 搜索结果的索引列表
+    
     // 动画系统 - 每个主题卡片的动画
     struct ThemeAnimation {
         Animation scaleAnim;
@@ -88,4 +95,11 @@ private:
     void UpdateAnimations();
     void DrawThemeList();
     void DrawThemeCard(LocalTheme& theme, int x, int y, int w, int h, bool selected, int themeIndex);
+    void DrawSearchBox();
+    void ShowKeyboard();
+    void ApplySearch();
+    bool IsTouchInRect(int touchX, int touchY, int rectX, int rectY, int rectW, int rectH);
+    
+    // 通知系统
+    BgmNotification mNotification;
 };

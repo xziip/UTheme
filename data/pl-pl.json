@@ -36,7 +36,9 @@
     "search_clear": "Wyczyść",
     "search_results": "wyników",
     "search_keyboard_hint": "Szukaj według nazwy, autora, tagów lub T+ID (np. T1, autor, tag)",
-    "random_theme": "Losowy Motyw"
+    "random_theme": "Losowy Motyw",
+    "disk_space_low": "Niewystarczająca ilość miejsca ({space}MB). Wyczyść pamięć podręczną w Ustawieniach.",
+    "disk_space_check_failed": "Nie można sprawdzić miejsca na dysku. Sprawdź kartę SD lub włącz logowanie."
   },
   "theme_detail": {
     "by": "Autor:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "Czy chcesz ustawić to jako nowy motyw menu Wii U?",
     "setting_current": "Ustawianie aktualnego motywu...",
     "set_current_complete": "Aktualny motyw zaktualizowany!",
+    "set_current_error": "Nie udało się ustawić motywu!",
+    "check_log": "Sprawdź dziennik: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "Czy na pewno chcesz odinstalować ten motyw?",
     "uninstalling": "Odinstalowywanie motywu...",
     "uninstall_complete": "Odinstalowanie zakończone!",
@@ -153,7 +157,9 @@
     "libraries": "Biblioteki i Narzędzia",
     "libwebp": "libwebp - Dekodowanie obrazów",
     "minizip": "MiniZIP - Obsługa archiwów",
-    "hips": "Hips - System łatek"
+    "hips": "Hips - System łatek",
+    "rapidjson": "RapidJSON - Parsowanie JSON",
+    "nathaniel": "Nathaniel - Ulepszenia łatek i integracja StyleMiiu"
   },
   "common": {
     "initializing": "Inicjalizacja...",

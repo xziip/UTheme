@@ -36,7 +36,9 @@
     "search_clear": "Borrar",
     "search_results": "resultados",
     "search_keyboard_hint": "Buscar por nombre, autor, etiquetas o T+ID (p.ej. T1, autor, etiqueta)",
-    "random_theme": "Tema Aleatorio"
+    "random_theme": "Tema Aleatorio",
+    "disk_space_low": "Espacio insuficiente ({space}MB). Por favor, limpie el caché en Configuración.",
+    "disk_space_check_failed": "No se pudo verificar el espacio. Verifique la tarjeta SD o active el registro en Configuración."
   },
   "theme_detail": {
     "by": "por",
@@ -52,6 +54,8 @@
     "set_current_confirm": "¿Deseas establecer este como tu nuevo tema del menú de Wii U?",
     "setting_current": "Estableciendo el tema actual...",
     "set_current_complete": "¡Tema actual actualizado!",
+    "set_current_error": "¡Error al establecer el tema!",
+    "check_log": "Comprobar registro: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "¿ Estás seguro de que quieres desinstalar este tema?",    "uninstalling": "Desinstalando tema...",    "uninstall_complete": "¡Desinstalación completada!",
     "downloading": "Descargando tema...",
     "extracting": "Extrayendo...",
@@ -151,7 +155,9 @@
     "libraries": "Bibliotecas y herramientas",
     "libwebp": "libwebp - Decodificación de imágenes",
     "minizip": "MiniZIP - Manejo de archivos",
-    "hips": "Hips - Sistema de parches"
+    "hips": "Hips - Sistema de parches",
+    "rapidjson": "RapidJSON - Análisis JSON",
+    "nathaniel": "Nathaniel - Mejoras de parches e integración StyleMiiu"
   },
   "common": {
     "initializing": "Inicializando...",

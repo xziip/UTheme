@@ -14,6 +14,7 @@ Config::Config()
     , mBgmUrl("https://raw.githubusercontent.com/xziip/utheme/main/data/BGM.mp3")  // 默认BGM下载地址
     , mHasShownTouchHint(false)  // 默认未显示触摸提示
     , mHasShownLanguageSwitchHint(false)  // 默认未显示语言切换提示
+    , mThemeChanged(false)  // 默认主题未更改（运行时标志）
     , mConfigPath("fs:/vol/external01/wiiu/utheme.cfg") {
     Load();
 }

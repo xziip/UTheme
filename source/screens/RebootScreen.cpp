@@ -3,7 +3,8 @@
 #include "../utils/LanguageManager.hpp"
 #include <coreinit/launch.h>   // OSLaunchTitle, OS_TITLE_ID_REBOOT
 
-RebootScreen::RebootScreen() {
+RebootScreen::RebootScreen(bool isSoftReboot) 
+    : mIsSoftReboot(isSoftReboot) {
     mTitleAnim.Start(0, 1, 500);
 }
 

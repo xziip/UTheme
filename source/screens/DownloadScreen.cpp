@@ -246,7 +246,10 @@ void DownloadScreen::Draw() {
             
             Gfx::DrawIcon(cardX + cardW/2, cardY + 70, 70, Gfx::COLOR_ERROR, 0xf071, Gfx::ALIGN_CENTER);
             Gfx::Print(cardX + cardW/2, cardY + 160, 48, Gfx::COLOR_ERROR, _("download.error"), Gfx::ALIGN_CENTER);
-            Gfx::Print(cardX + cardW/2, cardY + 210, 32, Gfx::COLOR_ALT_TEXT, mErrorMessage.c_str(), Gfx::ALIGN_CENTER);
+            
+            // 翻译错误消息（支持特殊标记）
+            std::string translatedError = TranslateErrorMessage(mErrorMessage);
+            Gfx::Print(cardX + cardW/2, cardY + 210, 32, Gfx::COLOR_ALT_TEXT, translatedError.c_str(), Gfx::ALIGN_CENTER);
             break;
         }
     }
@@ -1414,4 +1417,33 @@ void DownloadScreen::SelectRandomTheme() {
 
 const std::vector<Theme>& DownloadScreen::GetDisplayThemes() {
     return mThemeManager->GetThemes();
+}
+
+std::string DownloadScreen::TranslateErrorMessage(const std::string& errorMsg) {
+    // 检查是否是特殊标记格式
+    if (errorMsg.find("[[") == 0 && errorMsg.find("]]") != std::string::npos) {
+        size_t start = 2;  // 跳过 "[["
+        size_t end = errorMsg.find("]]");
+        std::string tag = errorMsg.substr(start, end - start);
+        
+        // 解析标记
+        if (tag == "disk_space_check_failed") {
+            return _("download.disk_space_check_failed");
+        } else if (tag.find("disk_space_low:") == 0) {
+            // 提取空间大小
+            std::string spaceStr = tag.substr(15);  // "disk_space_low:" 长度为15
+            std::string translated = _("download.disk_space_low");
+            
+            // 替换 {space} 占位符
+            size_t pos = translated.find("{space}");
+            if (pos != std::string::npos) {
+                translated.replace(pos, 7, spaceStr);  // "{space}" 长度为7
+            }
+            
+            return translated;
+        }
+    }
+    
+    // 如果不是特殊标记，直接返回原消息
+    return errorMsg;
 }

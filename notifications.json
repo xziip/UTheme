@@ -3,67 +3,18 @@
     {
       "id": "001",
       "type": "info",
-      "title": "欢迎",
-      "text": "hello world",
-      "duration": 5000,
-      "maxDisplayCount": 0
-    },
-    {
-      "id": "002",
-      "type": "update",
-      "title": "版本更新",
-      "text": "testing notifications",
-      "version": "v0.4test",
-      "duration": 7000,
-      "maxDisplayCount": 0
-    },
-    {
-      "id": "003",
-      "type": "warning",
-      "text": "中文测试",
-      "duration": 6000,
-      "maxDisplayCount": 9
-    },
-    {
-      "id": "004",
-      "type": "warning",
-      "title": "特殊字符测试",
-      "text": "Special characters: !@#$%^&*()_+-=[]{}|;':\",.<>/?`~",
-      "duration": 8000,
-      "maxDisplayCount": 0
-    },
-    {
-      "id": "005",
-      "type": "error",
-      "title": "错误测试",
-      "text": "Error test message",
-      "duration": 6000,
-      "maxDisplayCount": 9
-    },
-    {
-      "id": "006",
-      "type": "update",
-      "title": "版本更新",
-      "text": "testing notifications",
-      "version": "v0.3test",
-      "duration": 7000,
-      "maxDisplayCount": 0
-    },
-    {
-      "id": "textonly",
-      "type": "info",
-      "title": "",
-      "text": "こんにちは、世界！안녕하세요 세계! Bonjour le monde1!",
-      "duration": 80000,
+      "title": "Welcome to UTheme!",
+      "text": "If you like the app, please star it on GitHub and share it with your friends!",
+      "duration": 10000,
       "maxDisplayCount": 1
     },
     {
-      "id": "emptytest",
+      "id": "002",
       "type": "info",
-      "title": "",
-      "text": "",
-      "duration": 9999,
-      "maxDisplayCount": 2
+      "title": "Need Help?",
+      "text": "If you have any issues or suggestions, feel free to open an issue on the GitHub repository.",
+      "duration": 10000,
+      "maxDisplayCount": 1
     }
     
   ]

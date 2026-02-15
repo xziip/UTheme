@@ -36,7 +36,9 @@
     "search_clear": "清除",
     "search_results": "个结果",
     "search_keyboard_hint": "搜索主题名称、作者、标签或 T+ID (例如: T1, 作者名, 标签)",
-    "random_theme": "随机主题"
+    "random_theme": "随机主题",
+    "disk_space_low": "存储空间不足 ({space}MB)，请在设置中清理缓存",
+    "disk_space_check_failed": "无法检测存储空间。请检查SD卡是否正常，或在设置中启用日志查看详情"
   },
   "theme_detail": {
     "by": "作者:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "是否将此主题设为新的 Wii U 菜单主题?",
     "setting_current": "正在设置当前主题...",
     "set_current_complete": "当前主题已更新!",
+    "set_current_error": "设置失败!",
+    "check_log": "请查看日志: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "确定要卸载此主题吗?",
     "uninstalling": "正在卸载主题...",
     "uninstall_complete": "卸载完成!",
@@ -84,8 +88,13 @@
     "uninstall": "卸载主题",
     "installed": "已下载",
     "ready": "待安装",
+    "current": "当前",
     "developing": "功能开发中",
-    "install_local": "安装本地主题"
+    "install_local": "安装本地主题",
+    "set_current": "设为当前",
+    "set_current_success": "已设置为当前主题",
+    "set_current_failed": "设置失败",
+    "not_installed": "主题未安装，无法设置"
   },
   "local_install": {
     "title": "安装本地主题",
@@ -152,7 +161,9 @@
     "libraries": "库和工具",
     "libwebp": "libwebp - 图像解码",
     "minizip": "MiniZIP - 归档处理",
-    "hips": "Hips - 补丁系统"
+    "hips": "Hips - 补丁系统",
+    "rapidjson": "RapidJSON - JSON 解析",
+    "nathaniel": "Nathaniel - 补丁改进和 StyleMiiu 集成"
   },
   "common": {
     "initializing": "正在初始化...",

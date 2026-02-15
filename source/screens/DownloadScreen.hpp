@@ -86,4 +86,7 @@ private:
     void ApplySearch();
     void SelectRandomTheme();  // 随机选择主题
     const std::vector<Theme>& GetDisplayThemes();
+    
+    // 翻译错误消息（支持特殊标记）
+    std::string TranslateErrorMessage(const std::string& errorMsg);
 };

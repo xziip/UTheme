@@ -36,7 +36,9 @@
     "search_clear": "지우기",
     "search_results": "개 결과",
     "search_keyboard_hint": "이름, 제작자, 태그 또는 T+ID로 검색 (예: T1, 제작자, 태그)",
-    "random_theme": "랜덤 테마"
+    "random_theme": "랜덤 테마",
+    "disk_space_low": "저장 공간 부족 ({space}MB). 설정에서 캠시를 정리하세요.",
+    "disk_space_check_failed": "저장 공간을 확인할 수 없습니다. SD 카드를 확인하거나 설정에서 로깅을 활성화하세요."
   },
   "theme_detail": {
     "by": "제작:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "이것을 새로운 Wii U 메뉴 테마로 설정하시겠습니까?",
     "setting_current": "현재 테마 설정 중...",
     "set_current_complete": "현재 테마가 업데이트되었습니다!",
+    "set_current_error": "테마 설정에 실패했습니다!",
+    "check_log": "로그 확인: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "이 테마를 제거하시겠습니까?",
     "uninstalling": "테마 제거 중...",
     "uninstall_complete": "제거 완료!",
@@ -153,7 +157,9 @@
     "libraries": "라이브러리 및 도구",
     "libwebp": "libwebp - 이미지 디코딩",
     "minizip": "MiniZIP - 아카이브 처리",
-    "hips": "Hips - 패치 시스템"
+    "hips": "Hips - 패치 시스템",
+    "rapidjson": "RapidJSON - JSON 파싱",
+    "nathaniel": "Nathaniel - 패치 개선 및 StyleMiiu 통합"
   },
   "common": {
     "initializing": "초기화 중...",

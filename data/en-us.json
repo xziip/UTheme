@@ -36,7 +36,9 @@
     "search_clear": "Clear",
     "search_results": "results",
     "search_keyboard_hint": "Search by name, author, tags or T+ID (e.g., T1, author, tag)",
-    "random_theme": "Random Theme"
+    "random_theme": "Random Theme",
+    "disk_space_low": "Disk space low ({space}MB). Please clear cache in Settings.",
+    "disk_space_check_failed": "Failed to check disk space. Please check SD card or enable logging in Settings."
   },
   "theme_detail": {
     "by": "by",
@@ -52,6 +54,8 @@
     "set_current_confirm": "Would you like to set this as your new Wii U Menu Theme?",
     "setting_current": "Setting the current theme...",
     "set_current_complete": "Current theme updated!",
+    "set_current_error": "Failed to set current theme!",
+    "check_log": "Check log: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "Are you sure you want to uninstall this theme?",
     "uninstalling": "Uninstalling theme...",
     "uninstall_complete": "Uninstall complete!",
@@ -86,7 +90,11 @@
     "ready": "Ready",
     "current": "Current Theme",
     "developing": "Feature in development",
-    "install_local": "Install Local Theme"
+    "install_local": "Install Local Theme",
+    "set_current": "Set as Current",
+    "set_current_success": "Theme set as current",
+    "set_current_failed": "Failed to set theme",
+    "not_installed": "Theme not installed"
   },
   "local_install": {
     "title": "Install Local Theme",
@@ -153,7 +161,9 @@
     "libraries": "Libraries & Tools",
     "libwebp": "libwebp - Image decoding",
     "minizip": "MiniZIP - Archive handling",
-    "hips": "Hips - Patch system"
+    "hips": "Hips - Patch System",
+    "rapidjson": "RapidJSON - JSON Parsing",
+    "nathaniel": "Nathaniel - Patch Improvements & StyleMiiu Integration"
   },
   "common": {
     "initializing": "Initializing...",

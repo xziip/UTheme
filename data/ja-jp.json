@@ -36,7 +36,9 @@
     "search_clear": "クリア",
     "search_results": "件の結果",
     "search_keyboard_hint": "名前、作者、タグ、またはT+IDで検索 (例: T1、作者名、タグ)",
-    "random_theme": "ランダムテーマ"
+    "random_theme": "ランダムテーマ",
+    "disk_space_low": "ストレージ容量不足 ({space}MB)。設定でキャッシュをクリアしてください。",
+    "disk_space_check_failed": "ストレージ容量を確認できません。SDカードを確認するか、設定でログを有効にしてください。"
   },
   "theme_detail": {
     "by": "作者:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "これを新しいWii Uメニューテーマとして設定しますか?",
     "setting_current": "現在のテーマを設定中...",
     "set_current_complete": "現在のテーマを更新しました!",
+    "set_current_error": "設定に失敗しました!",
+    "check_log": "ログを確認: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "このテーマをアンインストールしますか?",
     "uninstalling": "テーマをアンインストール中...",
     "uninstall_complete": "アンインストール完了!",
@@ -153,7 +157,9 @@
     "libraries": "ライブラリとツール",
     "libwebp": "libwebp - 画像デコード",
     "minizip": "MiniZIP - アーカイブ処理",
-    "hips": "Hips - パッチシステム"
+    "hips": "Hips - パッチシステム",
+    "rapidjson": "RapidJSON - JSON パース",
+    "nathaniel": "Nathaniel - パッチ改善と StyleMiiu 統合"
   },
   "common": {
     "initializing": "初期化中...",

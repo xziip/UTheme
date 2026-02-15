@@ -1,5 +1,4 @@
 #include "ThemePatcher.hpp"
-#include "NUSDownloader.hpp"
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
@@ -480,23 +479,13 @@ bool ThemePatcher::InstallTheme(const std::string& themePath,
         if (!ApplyBPSPatch(originalData, patchData, patchedData)) {
             FileLogger::GetInstance().LogError("Failed to apply patch: %s", originalFileName.c_str());
             
-            // 尝试从 NUS 下载原始文件并重试
-            FileLogger::GetInstance().LogInfo("Attempting NUS download and retry for: %s", originalFileName.c_str());
+            // 显式释放内存
+            originalData.clear();
+            originalData.shrink_to_fit();
+            patchData.clear();
+            patchData.shrink_to_fit();
             
-            if (DownloadFromNUSAndRetry(originalFilePath, patchData, patchedData)) {
-                FileLogger::GetInstance().LogInfo("Successfully applied patch with NUS file");
-                // 继续处理 patchedData
-            } else {
-                FileLogger::GetInstance().LogError("NUS download and retry failed");
-                
-                // 显式释放内存
-                originalData.clear();
-                originalData.shrink_to_fit();
-                patchData.clear();
-                patchData.shrink_to_fit();
-                
-                continue;
-            }
+            continue;
         }
         
         // 显式释放不再需要的内存
@@ -743,40 +732,115 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
     
     const std::string path = envPath + "/plugins/config/style-mii-u.json";
 
-    // 读取安装信息获取主题名称
+    // 尝试从安装信息获取主题名称
+    std::string themeName;
     std::string installedInfoPath = std::string(INSTALLED_THEMES_ROOT) + "/" + themeID + ".json";
     
     FILE* jsonFile = fopen(installedInfoPath.c_str(), "r");
-    if (!jsonFile) {
-        FileLogger::GetInstance().LogError("Theme (%s) not installed or info file missing", themeID.c_str());
-        return false;
+    if (jsonFile) {
+        // 从installed info读取
+        fseek(jsonFile, 0, SEEK_END);
+        size_t fileSize = ftell(jsonFile);
+        rewind(jsonFile);
+        
+        std::string jsonContent;
+        jsonContent.resize(fileSize);
+        fread(&jsonContent[0], 1, fileSize, jsonFile);
+        fclose(jsonFile);
+        
+        rapidjson::Document themeInfo;
+        themeInfo.Parse(jsonContent.c_str());
+        
+        if (!themeInfo.HasParseError() && themeInfo.IsObject()) {
+            if (themeInfo.HasMember("themeName") && themeInfo["themeName"].IsString()) {
+                themeName = themeInfo["themeName"].GetString();
+                FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Got theme name from installed info: %s", themeName.c_str());
+            }
+        }
     }
     
-    fseek(jsonFile, 0, SEEK_END);
-    size_t fileSize = ftell(jsonFile);
-    rewind(jsonFile);
-    
-    std::string jsonContent;
-    jsonContent.resize(fileSize);
-    fread(&jsonContent[0], 1, fileSize, jsonFile);
-    fclose(jsonFile);
-    
-    // 使用 rapidjson 解析
-    rapidjson::Document themeInfo;
-    themeInfo.Parse(jsonContent.c_str());
-    
-    if (themeInfo.HasParseError() || !themeInfo.IsObject()) {
-        FileLogger::GetInstance().LogError("Invalid theme info JSON");
-        return false;
-    }
-    
-    std::string themeName;
-    if (themeInfo.HasMember("themeName") && themeInfo["themeName"].IsString()) {
-        themeName = themeInfo["themeName"].GetString();
+    // 如果从installed info获取失败，尝试从主题目录的theme_info.json读取
+    if (themeName.empty()) {
+        FileLogger::GetInstance().LogInfo("[SetCurrentTheme] No installed info, searching theme directory for ID: %s", themeID.c_str());
+        
+        DIR* themesDir = opendir(THEMES_ROOT);
+        if (themesDir) {
+            FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Opened THEMES_ROOT successfully");
+            struct dirent* entry;
+            int dirCount = 0;
+            while ((entry = readdir(themesDir)) != nullptr) {
+                if (entry->d_name[0] == '.') continue;
+                
+                std::string themeDir = std::string(THEMES_ROOT) + "/" + entry->d_name;
+                dirCount++;
+                
+                // 优先尝试 theme_info.json (ManageScreen使用这个)
+                std::string themeInfoPath = themeDir + "/theme_info.json";
+                FILE* metaFile = fopen(themeInfoPath.c_str(), "r");
+                
+                // 如果不存在，尝试 metadata.json
+                if (!metaFile) {
+                    themeInfoPath = themeDir + "/metadata.json";
+                    metaFile = fopen(themeInfoPath.c_str(), "r");
+                }
+                
+                if (metaFile) {
+                    FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Reading: %s", themeInfoPath.c_str());
+                    
+                    fseek(metaFile, 0, SEEK_END);
+                    size_t metaSize = ftell(metaFile);
+                    rewind(metaFile);
+                    
+                    std::string metaContent;
+                    metaContent.resize(metaSize);
+                    fread(&metaContent[0], 1, metaSize, metaFile);
+                    fclose(metaFile);
+                    
+                    rapidjson::Document metadata;
+                    metadata.Parse(metaContent.c_str());
+                    
+                    if (!metadata.HasParseError() && metadata.IsObject()) {
+                        std::string metaID;
+                        
+                        // 尝试多种字段名: "id", "themeID", "Metadata.id", "Metadata.themeID"
+                        if (metadata.HasMember("id") && metadata["id"].IsString()) {
+                            metaID = metadata["id"].GetString();
+                        } else if (metadata.HasMember("themeID") && metadata["themeID"].IsString()) {
+                            metaID = metadata["themeID"].GetString();
+                        } else if (metadata.HasMember("Metadata") && metadata["Metadata"].IsObject()) {
+                            const auto& metaObj = metadata["Metadata"];
+                            if (metaObj.HasMember("id") && metaObj["id"].IsString()) {
+                                metaID = metaObj["id"].GetString();
+                            } else if (metaObj.HasMember("themeID") && metaObj["themeID"].IsString()) {
+                                metaID = metaObj["themeID"].GetString();
+                            }
+                        }
+                        
+                        FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Theme %s has ID: %s (looking for: %s)", 
+                                                          entry->d_name, metaID.c_str(), themeID.c_str());
+                        
+                        if (metaID == themeID) {
+                            // 找到匹配的主题
+                            themeName = entry->d_name;
+                            FileLogger::GetInstance().LogInfo("[SetCurrentTheme] ✓ Found matching theme: %s", themeName.c_str());
+                            break;
+                        }
+                    } else {
+                        FileLogger::GetInstance().LogWarning("[SetCurrentTheme] Failed to parse JSON in %s", themeInfoPath.c_str());
+                    }
+                } else {
+                    FileLogger::GetInstance().LogWarning("[SetCurrentTheme] No metadata file for: %s", entry->d_name);
+                }
+            }
+            FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Scanned %d theme directories", dirCount);
+            closedir(themesDir);
+        } else {
+            FileLogger::GetInstance().LogError("[SetCurrentTheme] Failed to open THEMES_ROOT: %s", THEMES_ROOT);
+        }
     }
     
     if (themeName.empty()) {
-        FileLogger::GetInstance().LogError("Failed to parse theme name");
+        FileLogger::GetInstance().LogError("Theme (%s) not found in installed info or theme directories", themeID.c_str());
         return false;
     }
 
@@ -873,93 +937,3 @@ std::string ThemePatcher::GetCurrentTheme() {
         return "";
     }
 }
-
-bool ThemePatcher::DownloadFromNUSAndRetry(const std::string& originalFilePath,
-                                           const std::vector<uint8_t>& patchData,
-                                           std::vector<uint8_t>& patchedData) {
-    FileLogger::GetInstance().LogInfo("Attempting NUS download for: %s", originalFilePath.c_str());
-    
-    if (mProgressCallback) {
-        mProgressCallback(0.0f, "Downloading from NUS...");
-    }
-    
-    // TODO: 根据文件路径确定需要下载的 content ID
-    // 这需要知道每个文件对应哪个 content ID
-    // 暂时使用一个通用的方法
-    
-    // 常见的 Wii U Menu 文件映射
-    // Men.pack, Men2.pack -> content 00000002
-    // cafe_barista_men.bfsar -> content 00000009
-    // AllMessage.szs -> 语言包 content (varies by region)
-    
-    std::string contentID = "00000002"; // 默认使用主要内容
-    
-    // 简化：直接匹配常见文件
-    if (originalFilePath.find("cafe_barista") != std::string::npos) {
-        contentID = "00000009";
-    } else if (originalFilePath.find("Package/Men") != std::string::npos) {
-        contentID = "00000002";
-    }
-    
-    // 创建临时文件路径
-    std::string tempPath = std::string(CACHE_ROOT) + "/nus_download_temp.bin";
-    CreateDirectoryRecursive(CACHE_ROOT);
-    
-    // 下载文件
-    NUSDownloader downloader;
-    
-    auto progressWrapper = [this](float progress) {
-        if (mProgressCallback) {
-            char msg[256];
-            snprintf(msg, sizeof(msg), "Downloading from NUS... %.0f%%", progress * 100);
-            mProgressCallback(progress, msg);
-        }
-    };
-    
-    if (!downloader.DownloadMenuContent(contentID, tempPath, progressWrapper)) {
-        FileLogger::GetInstance().LogError("NUS download failed");
-        return false;
-    }
-    
-    FileLogger::GetInstance().LogInfo("NUS download successful, retrying patch...");
-    
-    // 读取下载的文件
-    FILE* tempFile = fopen(tempPath.c_str(), "rb");
-    if (!tempFile) {
-        FileLogger::GetInstance().LogError("Failed to open downloaded file");
-        return false;
-    }
-    
-    fseek(tempFile, 0, SEEK_END);
-    size_t tempSize = ftell(tempFile);
-    rewind(tempFile);
-    
-    std::vector<uint8_t> nusData(tempSize);
-    fread(nusData.data(), 1, tempSize, tempFile);
-    fclose(tempFile);
-    
-    // 删除临时文件
-    remove(tempPath.c_str());
-    
-    // 使用 NUS 下载的文件重新尝试补丁
-    if (!ApplyBPSPatch(nusData, patchData, patchedData)) {
-        FileLogger::GetInstance().LogError("Patch still failed with NUS file");
-        return false;
-    }
-    
-    FileLogger::GetInstance().LogInfo("Patch successful with NUS file!");
-    
-    // 可选：备份并替换原始文件
-    std::string backupPath = originalFilePath + ".backup";
-    rename(originalFilePath.c_str(), backupPath.c_str());
-    
-    FILE* outFile = fopen(originalFilePath.c_str(), "wb");
-    if (outFile) {
-        fwrite(nusData.data(), 1, nusData.size(), outFile);
-        fclose(outFile);
-        FileLogger::GetInstance().LogInfo("Replaced system file with NUS download");
-    }
-    
-    return true;
-}
-

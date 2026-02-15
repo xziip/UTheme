@@ -1033,6 +1033,13 @@ void LocalInstallScreen::PerformInstall() {
     if (success) {
         FileLogger::GetInstance().LogInfo("Theme installed successfully");
         
+        // 更新 StyleMiiU 配置
+        if (patcher.SetCurrentTheme(themeId)) {
+            FileLogger::GetInstance().LogInfo("StyleMiiU config updated successfully");
+        } else {
+            FileLogger::GetInstance().LogWarning("Failed to update StyleMiiU config");
+        }
+        
         // 如果需要删除原文件
         if (mDeleteAfterInstall) {
             FileLogger::GetInstance().LogInfo("Deleting source file: %s", file.fullPath.c_str());

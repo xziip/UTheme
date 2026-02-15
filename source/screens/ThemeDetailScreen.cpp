@@ -1,5 +1,6 @@
 #include "ThemeDetailScreen.hpp"
 #include "Gfx.hpp"
+#include "../utils/Config.hpp"
 #include "../utils/LanguageManager.hpp"
 #include "../utils/ImageLoader.hpp"
 #include "../utils/ThemeDownloader.hpp"
@@ -284,19 +285,21 @@ void ThemeDetailScreen::Draw() {
     // 右侧:信息区域
     DrawInfoSection(dummy);
     
-    // 下载进度覆盖层(下载中、安装中、卸载中或完成)
+    // 下载进度覆盖层(下载中、安装中、卸载中、设置当前主题或完成)
     if (mState == STATE_DOWNLOADING || mState == STATE_DOWNLOAD_COMPLETE || 
         mState == STATE_INSTALLING || mState == STATE_INSTALL_COMPLETE || 
         mState == STATE_INSTALL_ERROR || mState == STATE_UNINSTALL_CONFIRM ||
-        mState == STATE_UNINSTALLING || mState == STATE_UNINSTALL_COMPLETE) {
+        mState == STATE_UNINSTALLING || mState == STATE_UNINSTALL_COMPLETE ||
+        mState == STATE_SET_CURRENT_CONFIRM || mState == STATE_SETTING_CURRENT ||
+        mState == STATE_SET_CURRENT_COMPLETE || mState == STATE_SET_CURRENT_ERROR) {
         DrawDownloadProgress();
     }
     
     // 底部提示
     int tipY = Gfx::SCREEN_HEIGHT - 50;
-    std::string hints = _("theme_detail.hints");
+    std::string hints = mIsLocalMode ? _("theme_detail.hints_local") : _("theme_detail.hints");
     
-    // 替换 <Arrow> 为实际的箭头图标
+    // 替换 <Arrow> 为实际的箭头图标 (FontAwesome \ue07e)
     size_t pos = hints.find("<Arrow>");
     if (pos != std::string::npos) {
         hints.replace(pos, 7, "\ue07e");
@@ -706,7 +709,73 @@ void ThemeDetailScreen::DrawDownloadProgress() {
     Gfx::DrawRectRounded(cardX, cardY, cardW, cardH, 20, Gfx::COLOR_CARD_BG);
     
     // 根据状态显示不同内容
-    if (mState == STATE_UNINSTALL_CONFIRM) {
+    if (mState == STATE_SET_CURRENT_CONFIRM) {
+        // 设置当前主题确认对话框
+        const std::string confirmText = _("theme_detail.set_current_confirm");
+        Gfx::Print(cardX + cardW / 2, cardY + 60, 36, Gfx::COLOR_ACCENT, 
+                   confirmText.c_str(), Gfx::ALIGN_CENTER);
+        
+        // 星星图标
+        Gfx::DrawIcon(cardX + cardW / 2, cardY + 130, 70, Gfx::COLOR_ACCENT, 
+                      0xf005, Gfx::ALIGN_CENTER); // star icon
+        
+        // 主题名称 - 清理特殊字符用于显示
+        std::string themeNameText = Utils::SanitizeThemeNameForDisplay(mTheme->name);
+        if (themeNameText.length() > 40) {
+            themeNameText = themeNameText.substr(0, 37) + "...";
+        }
+        Gfx::Print(cardX + cardW / 2, cardY + 200, 28, Gfx::COLOR_TEXT, 
+                   themeNameText.c_str(), Gfx::ALIGN_CENTER);
+        
+        // 提示信息
+        Gfx::Print(cardX + cardW / 2, cardY + 240, 24, Gfx::COLOR_ALT_TEXT, 
+                   "A: " + _("common.confirm"), Gfx::ALIGN_CENTER);
+        Gfx::Print(cardX + cardW / 2, cardY + 270, 24, Gfx::COLOR_ALT_TEXT, 
+                   "B: " + _("common.cancel"), Gfx::ALIGN_CENTER);
+    } else if (mState == STATE_SETTING_CURRENT) {
+        // 正在设置当前主题
+        const std::string statusText = _("theme_detail.setting_current");
+        Gfx::Print(cardX + cardW / 2, cardY + 50, 40, Gfx::COLOR_TEXT, 
+                   statusText.c_str(), Gfx::ALIGN_CENTER);
+        
+        // 旋转图标
+        double angle = (mFrameCount % 60) * 6.0;
+        Gfx::DrawIcon(cardX + cardW / 2, cardY + 120, 60, Gfx::COLOR_ACCENT, 
+                      0xf013, Gfx::ALIGN_CENTER, angle); // gear icon
+        
+        // 提示文本
+        Gfx::Print(cardX + cardW / 2, cardY + 200, 28, Gfx::COLOR_ALT_TEXT, 
+                   "Updating StyleMiiU config...", Gfx::ALIGN_CENTER);
+    } else if (mState == STATE_SET_CURRENT_COMPLETE) {
+        // 设置完成
+        const std::string completeText = _("theme_detail.set_current_complete");
+        Gfx::Print(cardX + cardW / 2, cardY + 80, 48, Gfx::COLOR_SUCCESS, 
+                   completeText.c_str(), Gfx::ALIGN_CENTER);
+        
+        // 成功图标
+        Gfx::DrawIcon(cardX + cardW / 2, cardY + 160, 80, Gfx::COLOR_SUCCESS, 
+                      0xf00c, Gfx::ALIGN_CENTER); // checkmark icon
+        
+        // 提示信息
+        Gfx::Print(cardX + cardW / 2, cardY + 250, 28, Gfx::COLOR_ALT_TEXT, 
+                   "A/B: " + _("common.back"), Gfx::ALIGN_CENTER);
+    } else if (mState == STATE_SET_CURRENT_ERROR) {
+        // 设置失败
+        const std::string errorText = _("theme_detail.set_current_error");
+        Gfx::Print(cardX + cardW / 2, cardY + 80, 48, Gfx::COLOR_ERROR, 
+                   errorText.c_str(), Gfx::ALIGN_CENTER);
+        
+        // 错误图标
+        Gfx::DrawIcon(cardX + cardW / 2, cardY + 160, 80, Gfx::COLOR_ERROR, 
+                      0xf06a, Gfx::ALIGN_CENTER); // exclamation-circle icon
+        
+        // 提示信息 - 建议查看日志
+        Gfx::Print(cardX + cardW / 2, cardY + 250, 24, Gfx::COLOR_ALT_TEXT, 
+                   _("theme_detail.check_log"), Gfx::ALIGN_CENTER);
+        
+        Gfx::Print(cardX + cardW / 2, cardY + 290, 28, Gfx::COLOR_ALT_TEXT, 
+                   "A/B: " + _("common.back"), Gfx::ALIGN_CENTER);
+    } else if (mState == STATE_UNINSTALL_CONFIRM) {
         // 卸载确认对话框
         const std::string confirmText = _("theme_detail.uninstall_confirm");
         Gfx::Print(cardX + cardW / 2, cardY + 60, 40, Gfx::COLOR_WARNING, 
@@ -1146,6 +1215,26 @@ bool ThemeDetailScreen::Update(Input &input) {
         }
     }
     
+    // 处理设置当前主题请求
+    if (mState == STATE_SETTING_CURRENT) {
+        FileLogger::GetInstance().LogInfo("[SET_CURRENT] Starting to set current theme");
+        
+        ThemePatcher patcher;
+        bool success = patcher.SetCurrentTheme(mTheme->id);
+        
+        if (success) {
+            mState = STATE_SET_CURRENT_COMPLETE;
+            FileLogger::GetInstance().LogInfo("[SET_CURRENT] Theme set as current successfully");
+            
+            // 标记主题已更改（用于退出时软重启）
+            Config::GetInstance().SetThemeChanged(true);
+            FileLogger::GetInstance().LogInfo("[SET_CURRENT] Marked theme as changed for soft reboot on exit");
+        } else {
+            mState = STATE_SET_CURRENT_ERROR;
+            FileLogger::GetInstance().LogError("[SET_CURRENT] Failed to set current theme");
+        }
+    }
+    
     // 更新图片加载器 - 处理异步图片加载
     ImageLoader::Update();
     
@@ -1225,6 +1314,18 @@ bool ThemeDetailScreen::Update(Input &input) {
                 
                 if (success) {
                     FileLogger::GetInstance().LogInfo("Theme installed successfully: %s", themeName.c_str());
+                    
+                    // 更新 StyleMiiU 配置
+                    if (patcher.SetCurrentTheme(themeId)) {
+                        FileLogger::GetInstance().LogInfo("StyleMiiU config updated successfully");
+                        
+                        // 标记主题已更改（用于退出时软重启）
+                        Config::GetInstance().SetThemeChanged(true);
+                        FileLogger::GetInstance().LogInfo("[INSTALL] Marked theme as changed for soft reboot on exit");
+                    } else {
+                        FileLogger::GetInstance().LogWarning("Failed to update StyleMiiU config");
+                    }
+                    
                     mState = STATE_INSTALL_COMPLETE;
                 } else {
                     FileLogger::GetInstance().LogError("Failed to install theme: %s", themeName.c_str());
@@ -1485,8 +1586,29 @@ bool ThemeDetailScreen::Update(Input &input) {
         int currentState = mState.load();
         FileLogger::GetInstance().LogInfo("[INPUT] A button pressed, isLocalMode=%d, state=%d", isLocalMode, currentState);
         
+        // 如果在设置当前主题确认对话框中按A,执行设置
+        if (mState == STATE_SET_CURRENT_CONFIRM) {
+            FileLogger::GetInstance().LogInfo("[SET_CURRENT] Confirmed, transitioning to SETTING_CURRENT");
+            mState = STATE_SETTING_CURRENT;
+            // 不要立即return,让下面的设置逻辑执行
+        }
+        
+        // 如果在设置完成界面按A,返回
+        else if (mState == STATE_SET_CURRENT_COMPLETE) {
+            FileLogger::GetInstance().LogInfo("[SET_CURRENT] Complete screen, returning");
+            mState = STATE_VIEWING;
+            return true;
+        }
+        
+        // 如果在设置失败界面按A,返回
+        else if (mState == STATE_SET_CURRENT_ERROR) {
+            FileLogger::GetInstance().LogInfo("[SET_CURRENT] Error screen, returning");
+            mState = STATE_VIEWING;
+            return true;
+        }
+        
         // 如果在确认对话框中按A,执行卸载
-        if (mState == STATE_UNINSTALL_CONFIRM) {
+        else if (mState == STATE_UNINSTALL_CONFIRM) {
             FileLogger::GetInstance().LogInfo("[UNINSTALL] Confirmed, transitioning to UNINSTALLING");
             mState = STATE_UNINSTALLING;
             FileLogger::GetInstance().LogInfo("[UNINSTALL] State changed, continuing execution");
@@ -1516,8 +1638,38 @@ bool ThemeDetailScreen::Update(Input &input) {
         }
     }
     
+    // Y键设置为当前主题（仅在本地模式下）
+    if (input.data.buttons_d & Input::BUTTON_Y) {
+        bool isLocalMode = (mThemeManager == nullptr);
+        
+        // 只在本地模式且浏览状态下允许设置当前主题
+        if (isLocalMode && mState == STATE_VIEWING) {
+            FileLogger::GetInstance().LogInfo("Showing set current theme confirmation for: %s", mTheme->name.c_str());
+            mState = STATE_SET_CURRENT_CONFIRM;
+            return true;
+        }
+    }
+    
     // B键返回或取消
     if (input.data.buttons_d & Input::BUTTON_B) {
+        // 如果在设置当前主题确认对话框中按B,取消
+        if (mState == STATE_SET_CURRENT_CONFIRM) {
+            mState = STATE_VIEWING;
+            return true;
+        }
+        
+        // 如果在设置完成界面按B,返回浏览状态
+        if (mState == STATE_SET_CURRENT_COMPLETE) {
+            mState = STATE_VIEWING;
+            return true;
+        }
+        
+        // 如果在设置失败界面按B,返回浏览状态
+        if (mState == STATE_SET_CURRENT_ERROR) {
+            mState = STATE_VIEWING;
+            return true;
+        }
+        
         // 如果在确认对话框中按B,取消
         if (mState == STATE_UNINSTALL_CONFIRM) {
             mState = STATE_VIEWING;

@@ -36,7 +36,9 @@
     "search_clear": "Очистить",
     "search_results": "результатов",
     "search_keyboard_hint": "Искать по имени, автору, тегам или T+ID (напр.: T1, автор, тег)",
-    "random_theme": "Случайная Тема"
+    "random_theme": "Случайная Тема",
+    "disk_space_low": "Недостаточно места ({space}MB). Пожалуйста, очистите кэш в Настройках.",
+    "disk_space_check_failed": "Не удалось проверить место на диске. Проверьте SD-карту или включите журналирование."
   },
   "theme_detail": {
     "by": "Автор:",
@@ -52,6 +54,8 @@
     "set_current_confirm": "Хотите установить это как новую тему меню Wii U?",
     "setting_current": "Установка текущей темы...",
     "set_current_complete": "Текущая тема обновлена!",
+    "set_current_error": "Не удалось установить тему!",
+    "check_log": "Проверьте журнал: sd:/log/UTheme/utheme##.log",
     "uninstall_confirm": "Вы уверены, что хотите удалить эту тему?",
     "uninstalling": "Удаление темы...",
     "uninstall_complete": "Удаление завершено!",
@@ -153,7 +157,9 @@
     "libraries": "Библиотеки и инструменты",
     "libwebp": "libwebp - Декодирование изображений",
     "minizip": "MiniZIP - Работа с архивами",
-    "hips": "Hips - Система патчей"
+    "hips": "Hips - Система патчей",
+    "rapidjson": "RapidJSON - Парсинг JSON",
+    "nathaniel": "Nathaniel - Улучшения патчей и интеграция StyleMiiu"
   },
   "common": {
     "initializing": "Инициализация...",

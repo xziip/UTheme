@@ -69,7 +69,7 @@ CXXFLAGS	:= $(CFLAGS)
 ASFLAGS	:=	$(ARCH)
 LDFLAGS	=	$(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map) -Wl,--allow-multiple-definition
 
-LIBS	:=	-lmocha $(SDL2_LIBS) $(CURL_LIBS) -lmbedtls -lmbedx509 -lmbedcrypto -lharfbuzz -lwut
+LIBS	:=	-lmocha $(SDL2_LIBS) $(CURL_LIBS) -lharfbuzz -lwut
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level

@@ -5,7 +5,7 @@
 
 class RebootScreen : public Screen {
 public:
-    RebootScreen();
+    RebootScreen(bool isSoftReboot = false);
     ~RebootScreen() override;
 
     void Draw() override;
@@ -14,4 +14,5 @@ public:
 
 private:
     Animation mTitleAnim;
+    bool mIsSoftReboot;
 };

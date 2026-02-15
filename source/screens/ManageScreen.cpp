@@ -3,11 +3,13 @@
 #include "DownloadScreen.hpp"
 #include "LocalInstallScreen.hpp"
 #include "Gfx.hpp"
+#include "../utils/Config.hpp"
 #include "../utils/LanguageManager.hpp"
 #include "../utils/FileLogger.hpp"
 #include "../utils/ImageLoader.hpp"
 #include "../utils/ThemePatcher.hpp"
 #include "../utils/Utils.hpp"
+#include "../utils/SwkbdManager.hpp"
 #include "rapidjson/document.h"
 #include "../input/CombinedInput.h"
 #include "../input/VPADInput.h"
@@ -203,6 +205,10 @@ void ManageScreen::LoadThemeMetadata(LocalTheme& theme) {
                 theme.id = root["id"].GetString();
                 FileLogger::GetInstance().LogInfo("  ID: %s", theme.id.c_str());
             }
+            if (root.HasMember("shortId") && root["shortId"].IsString()) {
+                theme.shortId = root["shortId"].GetString();
+                FileLogger::GetInstance().LogInfo("  Short ID: %s", theme.shortId.c_str());
+            }
             if (root.HasMember("author") && root["author"].IsString()) {
                 theme.author = root["author"].GetString();
                 FileLogger::GetInstance().LogInfo("  Author: %s", theme.author.c_str());
@@ -345,20 +351,25 @@ void ManageScreen::Draw() {
     }
     // 显示主题网格
     else {
+        DrawSearchBox();  // 绘制搜索框
         DrawThemeList();
         
         // 显示主题计数和选择信息
         if (!mThemes.empty()) {
-            char infoText[128];
-            snprintf(infoText, sizeof(infoText), "%d / %zu", mSelectedIndex + 1, mThemes.size());
-            Gfx::Print(Gfx::SCREEN_WIDTH - 100, Gfx::SCREEN_HEIGHT - 140, 28, Gfx::COLOR_ALT_TEXT, 
-                      infoText, Gfx::ALIGN_RIGHT | Gfx::ALIGN_VERTICAL);
+            size_t displayCount = mSearchActive ? mFilteredIndices.size() : mThemes.size();
+            if (displayCount > 0) {
+                char infoText[128];
+                snprintf(infoText, sizeof(infoText), "%d / %zu", mSelectedIndex + 1, displayCount);
+                Gfx::Print(Gfx::SCREEN_WIDTH - 100, Gfx::SCREEN_HEIGHT - 140, 28, Gfx::COLOR_ALT_TEXT, 
+                          infoText, Gfx::ALIGN_RIGHT | Gfx::ALIGN_VERTICAL);
+            }
         }
     }
     
-    // 底部提示 - 添加本地安装选项
+    // 底部提示 - 添加本地安装和快速设置选项
     std::string bottomHint = "\ue000 " + std::string(_("manage.view_details")) + 
-                             "  |  \ue002 " + std::string(_("manage.install_local"));
+                             "  |  \ue002 " + std::string(_("manage.install_local")) +
+                             "  |  \ue003 " + std::string(_("manage.set_current"));
     
     DrawBottomBar(bottomHint.c_str(), 
                  (std::string("\ue044 ") + _("input.exit")).c_str(), 
@@ -366,6 +377,10 @@ void ManageScreen::Draw() {
     
     // 绘制圆形返回按钮
     Screen::DrawBackButton();
+    
+    // 更新和绘制通知
+    mNotification.Update();
+    mNotification.Draw();
 }
 
 void ManageScreen::DrawThemeList() {
@@ -373,27 +388,49 @@ void ManageScreen::DrawThemeList() {
         return;
     }
     
+    // 使用过滤后的主题列表
+    size_t displayCount = mSearchActive ? mFilteredIndices.size() : mThemes.size();
+    
+    // 如果搜索结果为空
+    if (mSearchActive && mFilteredIndices.empty()) {
+        const int cardW = 800;
+        const int cardH = 300;
+        const int cardX = (Gfx::SCREEN_WIDTH - cardW) / 2;
+        const int cardY = (Gfx::SCREEN_HEIGHT - cardH) / 2;
+        
+        SDL_Color shadowColor = Gfx::COLOR_SHADOW;
+        shadowColor.a = 80;
+        Gfx::DrawRectRounded(cardX + 6, cardY + 6, cardW, cardH, 20, shadowColor);
+        Gfx::DrawRectRounded(cardX, cardY, cardW, cardH, 20, Gfx::COLOR_CARD_BG);
+        
+        Gfx::DrawIcon(cardX + cardW/2, cardY + 100, 70, Gfx::COLOR_WARNING, 0xf002, Gfx::ALIGN_CENTER);
+        Gfx::Print(cardX + cardW/2, cardY + 190, 44, Gfx::COLOR_TEXT, "No matching themes", Gfx::ALIGN_CENTER);
+        return;
+    }
+    
     // 绘制主题列表 - 和 DownloadScreen 一样
     const int listX = LIST_X;
-    const int listY = LIST_Y;
+    const int listY = 240;  // 向下移动以留出搜索框空间
     const int cardW = CARD_WIDTH;
     const int cardH = CARD_HEIGHT;
     const int cardSpacing = CARD_SPACING;
     const int visibleCount = VISIBLE_COUNT;
     
     int currentY = listY;
-    int endIndex = std::min(mScrollOffset + visibleCount, (int)mThemes.size());
+    int endIndex = std::min(mScrollOffset + visibleCount, (int)displayCount);
     
     for (int i = mScrollOffset; i < endIndex; i++) {
         bool selected = (i == mSelectedIndex);
-        DrawThemeCard(mThemes[i], listX, currentY, cardW, cardH, selected, i);
+        // 获取实际主题索引
+        size_t realIndex = mSearchActive ? mFilteredIndices[i] : i;
+        DrawThemeCard(mThemes[realIndex], listX, currentY, cardW, cardH, selected, realIndex);
         currentY += cardH + cardSpacing;
     }
     
     // 绘制滚动指示器
-    if (mThemes.size() > visibleCount) {
+    if (displayCount > visibleCount) {
         char scrollInfo[32];
-        snprintf(scrollInfo, sizeof(scrollInfo), "%d / %zu", mSelectedIndex + 1, mThemes.size());
+        snprintf(scrollInfo, sizeof(scrollInfo), "%d / %zu", mSelectedIndex + 1, displayCount);
         Gfx::Print(Gfx::SCREEN_WIDTH - 100, Gfx::SCREEN_HEIGHT - 150, 32, Gfx::COLOR_ALT_TEXT, 
                   scrollInfo, Gfx::ALIGN_VERTICAL | Gfx::ALIGN_RIGHT);
     }
@@ -569,7 +606,36 @@ void ManageScreen::DrawThemeCard(LocalTheme& theme, int x, int y, int w, int h, 
     }
     
     // 状态标签（右上角,与 DownloadScreen 样式一致）
-    if (theme.hasPatched) {
+    // 首先检查是否是当前主题
+    bool isCurrentTheme = !mCurrentThemeName.empty() && (theme.name == mCurrentThemeName);
+    
+    // 调试日志 - 只在选中的卡片上输出
+    if (selected && mFrameCount % 60 == 0) {  // 每秒输出一次
+        FileLogger::GetInstance().LogInfo("[DrawThemeCard] Checking current theme:");
+        FileLogger::GetInstance().LogInfo("  theme.name: '%s'", theme.name.c_str());
+        FileLogger::GetInstance().LogInfo("  mCurrentThemeName: '%s'", mCurrentThemeName.c_str());
+        FileLogger::GetInstance().LogInfo("  isCurrentTheme: %d", isCurrentTheme ? 1 : 0);
+    }
+    
+    if (isCurrentTheme) {
+        // "当前"标签 - 最高优先级，蓝色背景
+        const int badgeW = 140;
+        const int badgeH = 45;
+        const int badgeX = x + w - badgeW - 20;
+        const int badgeY = y + 20;
+        
+        // 背景 - 蓝色（当前激活）
+        SDL_Color badgeBg = Gfx::COLOR_ACCENT;
+        badgeBg.a = 220;
+        Gfx::DrawRectRounded(badgeX, badgeY, badgeW, badgeH, 8, badgeBg);
+        
+        // 图标 - 星星标记
+        Gfx::DrawIcon(badgeX + 15, badgeY + badgeH/2, 28, Gfx::COLOR_WHITE, 0xf005, Gfx::ALIGN_VERTICAL);
+        
+        // 文字
+        Gfx::Print(badgeX + 50, badgeY + badgeH/2, 28, Gfx::COLOR_WHITE, 
+                  _("manage.current"), Gfx::ALIGN_VERTICAL);
+    } else if (theme.hasPatched) {
         // "已安装"标签 - 右上角显示
         const int badgeW = 140;
         const int badgeH = 45;
@@ -722,7 +788,8 @@ bool ManageScreen::Update(Input &input) {
         }
         
         // 上下选择(支持循环)
-        const int themeCount = (int)mThemes.size();
+        size_t displayCount = mSearchActive ? mFilteredIndices.size() : mThemes.size();
+        const int themeCount = (int)displayCount;
         if (shouldMoveUp) {
             if (mSelectedIndex > 0) {
                 mSelectedIndex--;
@@ -751,16 +818,20 @@ bool ManageScreen::Update(Input &input) {
         
         // 如果选择改变，更新动画
         if (prevSelected != mSelectedIndex) {
+            // 获取实际索引
+            size_t prevRealIndex = mSearchActive ? (prevSelected >= 0 && prevSelected < (int)mFilteredIndices.size() ? mFilteredIndices[prevSelected] : 0) : prevSelected;
+            size_t currentRealIndex = mSearchActive ? (mSelectedIndex >= 0 && mSelectedIndex < (int)mFilteredIndices.size() ? mFilteredIndices[mSelectedIndex] : 0) : mSelectedIndex;
+            
             // 重置旧的选择
-            if (prevSelected >= 0 && prevSelected < (int)mThemeAnims.size()) {
-                mThemeAnims[prevSelected].scaleAnim.SetTarget(1.0f, 300);
-                mThemeAnims[prevSelected].highlightAnim.SetTarget(0.0f, 300);
+            if (prevSelected >= 0 && prevRealIndex < mThemeAnims.size()) {
+                mThemeAnims[prevRealIndex].scaleAnim.SetTarget(1.0f, 300);
+                mThemeAnims[prevRealIndex].highlightAnim.SetTarget(0.0f, 300);
             }
             
             // 高亮新的选择
-            if (mSelectedIndex >= 0 && mSelectedIndex < (int)mThemeAnims.size()) {
-                mThemeAnims[mSelectedIndex].scaleAnim.SetTarget(1.05f, 300);
-                mThemeAnims[mSelectedIndex].highlightAnim.SetTarget(1.0f, 300);
+            if (mSelectedIndex >= 0 && currentRealIndex < mThemeAnims.size()) {
+                mThemeAnims[currentRealIndex].scaleAnim.SetTarget(1.05f, 300);
+                mThemeAnims[currentRealIndex].highlightAnim.SetTarget(1.0f, 300);
             }
         }
         
@@ -774,14 +845,48 @@ bool ManageScreen::Update(Input &input) {
             
             FileLogger::GetInstance().LogInfo("Touch at (%d, %d)", touchX, touchY);
             
+            // 首先检查是否点击搜索框
+            const int searchBoxX = 100;
+            const int searchBoxY = 150;
+            const int searchBoxW = 1520;
+            const int searchBoxH = 70;
+            
+            // 如果有搜索文本，优先检查是否点击清除按钮
+            if (!mSearchText.empty()) {
+                const int clearBtnX = searchBoxX + searchBoxW - 200;
+                const int clearBtnW = 200;
+                const int clearBtnY = searchBoxY;
+                const int clearBtnH = searchBoxH;
+                if (IsTouchInRect(touchX, touchY, clearBtnX, clearBtnY, clearBtnW, clearBtnH)) {
+                    // 点击了清除按钮
+                    FileLogger::GetInstance().LogInfo("Clearing search filter");
+                    mSearchText.clear();
+                    mSearchActive = false;
+                    mFilteredIndices.clear();
+                    mSelectedIndex = 0;
+                    mScrollOffset = 0;
+                    return true;
+                }
+            }
+            
+            // 检查是否点击搜索框其他区域（打开键盘）
+            if (IsTouchInRect(touchX, touchY, searchBoxX, searchBoxY, searchBoxW, searchBoxH)) {
+                // 打开键盘
+                ShowKeyboard();
+                return true;
+            }
+            
             // 检查是否点击了某个主题卡片
             const int cardX = 100;
-            const int cardY = 170;
+            const int cardY = 240;  // 因为搜索框占据了上面的空间，主题卡片Y位置向下移动
             const int cardW = 1720;
             const int cardH = 200;
             const int cardSpacing = 15;
             
-            for (int i = 0; i < VISIBLE_COUNT && (mScrollOffset + i) < (int)mThemes.size(); i++) {
+            // 确定显示的主题数量
+            size_t displayCount = mSearchActive ? mFilteredIndices.size() : mThemes.size();
+            
+            for (int i = 0; i < VISIBLE_COUNT && (mScrollOffset + i) < (int)displayCount; i++) {
                 int y = cardY + i * (cardH + cardSpacing);
                 
                 if (touchX >= cardX && touchX <= (cardX + cardW) &&
@@ -794,17 +899,20 @@ bool ManageScreen::Update(Input &input) {
                         int prevSel = mSelectedIndex;
                         mSelectedIndex = clickedIndex;
                         
-                        // 更新动画
-                        if (prevSel >= 0 && prevSel < (int)mThemeAnims.size()) {
-                            mThemeAnims[prevSel].scaleAnim.SetTarget(1.0f, 300);
-                            mThemeAnims[prevSel].highlightAnim.SetTarget(0.0f, 300);
+                        // 更新动画（使用实际索引）
+                        size_t realIndex = mSearchActive ? mFilteredIndices[mSelectedIndex] : mSelectedIndex;
+                        size_t prevRealIndex = mSearchActive ? (prevSel < (int)mFilteredIndices.size() ? mFilteredIndices[prevSel] : 0) : prevSel;
+                        
+                        if (prevSel >= 0 && prevRealIndex < mThemeAnims.size()) {
+                            mThemeAnims[prevRealIndex].scaleAnim.SetTarget(1.0f, 300);
+                            mThemeAnims[prevRealIndex].highlightAnim.SetTarget(0.0f, 300);
                         }
-                        if (mSelectedIndex >= 0 && mSelectedIndex < (int)mThemeAnims.size()) {
-                            mThemeAnims[mSelectedIndex].scaleAnim.SetTarget(1.05f, 300);
-                            mThemeAnims[mSelectedIndex].highlightAnim.SetTarget(1.0f, 300);
+                        if (realIndex < mThemeAnims.size()) {
+                            mThemeAnims[realIndex].scaleAnim.SetTarget(1.05f, 300);
+                            mThemeAnims[realIndex].highlightAnim.SetTarget(1.0f, 300);
                         }
                         
-                        FileLogger::GetInstance().LogInfo("Theme selected by touch: %d", mSelectedIndex);
+                        FileLogger::GetInstance().LogInfo("Theme selected by touch: %d (real: %zu)", mSelectedIndex, realIndex);
                     } else {
                         // 双击效果: 如果已经选中,直接进入详情
                         FileLogger::GetInstance().LogInfo("Double-tap detected, opening details");
@@ -818,9 +926,13 @@ bool ManageScreen::Update(Input &input) {
         
         // 按 A 进入详情
         if (input.data.buttons_d & Input::BUTTON_A) {
-            if (mSelectedIndex >= 0 && mSelectedIndex < (int)mThemes.size()) {
-                LocalTheme& localTheme = mThemes[mSelectedIndex];
-                FileLogger::GetInstance().LogInfo("Opening details for theme: %s", localTheme.name.c_str());
+            size_t displayCount = mSearchActive ? mFilteredIndices.size() : mThemes.size();
+            if (mSelectedIndex >= 0 && mSelectedIndex < (int)displayCount) {
+                // 获取实际主题索引
+                size_t realIndex = mSearchActive ? mFilteredIndices[mSelectedIndex] : mSelectedIndex;
+                LocalTheme& localTheme = mThemes[realIndex];
+                FileLogger::GetInstance().LogInfo("Opening details for theme: %s (display index: %d, real index: %zu)", 
+                                                  localTheme.name.c_str(), mSelectedIndex, realIndex);
                 
                 // 将 LocalTheme 转换为 Theme 结构
                 Theme theme;
@@ -887,6 +999,68 @@ bool ManageScreen::Update(Input &input) {
         }
     }
     
+    // 按 Y 快速设置为当前主题
+    if (input.data.buttons_d & Input::BUTTON_Y) {
+        size_t displayCount = mSearchActive ? mFilteredIndices.size() : mThemes.size();
+        if (mSelectedIndex >= 0 && mSelectedIndex < (int)displayCount) {
+            // 获取实际主题索引
+            size_t realIndex = mSearchActive ? mFilteredIndices[mSelectedIndex] : mSelectedIndex;
+            LocalTheme& selectedTheme = mThemes[realIndex];
+            
+            FileLogger::GetInstance().LogInfo("[ManageScreen] Y pressed, setting current theme: %s", 
+                                             selectedTheme.name.c_str());
+            FileLogger::GetInstance().LogInfo("[ManageScreen] Theme ID: %s", 
+                                             selectedTheme.id.empty() ? "(empty)" : selectedTheme.id.c_str());
+            FileLogger::GetInstance().LogInfo("[ManageScreen] Theme hasPatched: %d", selectedTheme.hasPatched ? 1 : 0);
+            
+            // 检查主题是否已安装（hasPatched）
+            if (!selectedTheme.hasPatched) {
+                FileLogger::GetInstance().LogWarning("[ManageScreen] Theme not installed: %s", 
+                                                     selectedTheme.name.c_str());
+                mNotification.ShowWarning(_("manage.not_installed"));
+                return true;
+            }
+            
+            // 调用SetCurrentTheme
+            ThemePatcher patcher;
+            if (!selectedTheme.id.empty()) {
+                bool success = patcher.SetCurrentTheme(selectedTheme.id);
+                if (success) {
+                    FileLogger::GetInstance().LogInfo("[ManageScreen] Successfully set current theme to: %s", 
+                                                     selectedTheme.name.c_str());
+                    
+                    // 验证是否真的写入成功
+                    std::string verifyTheme = patcher.GetCurrentTheme();
+                    FileLogger::GetInstance().LogInfo("[ManageScreen] Verification: GetCurrentTheme() returned: '%s'", 
+                                                     verifyTheme.c_str());
+                    
+                    // 更新当前主题名称
+                    mCurrentThemeName = selectedTheme.name;
+                    FileLogger::GetInstance().LogInfo("[ManageScreen] Updated mCurrentThemeName to: '%s'", 
+                                                     mCurrentThemeName.c_str());
+                    
+                    // 标记主题已更改（用于退出时软重启）
+                    Config::GetInstance().SetThemeChanged(true);
+                    FileLogger::GetInstance().LogInfo("[ManageScreen] Marked theme as changed for soft reboot on exit");
+                    
+                    // 显示成功通知
+                    std::string successMsg = std::string(_("manage.set_current_success")) + ": " + 
+                                           Utils::SanitizeThemeNameForDisplay(selectedTheme.name);
+                    mNotification.ShowInfo(successMsg);
+                } else {
+                    FileLogger::GetInstance().LogError("[ManageScreen] Failed to set current theme: %s", 
+                                                      selectedTheme.name.c_str());
+                    mNotification.ShowError(_("manage.set_current_failed"));
+                }
+            } else {
+                FileLogger::GetInstance().LogError("[ManageScreen] Theme has no ID: %s", 
+                                                  selectedTheme.name.c_str());
+                mNotification.ShowError("Theme has no ID (missing theme_info.json)");
+            }
+        }
+        return true;
+    }
+    
     // 按 B 返回
     if (input.data.buttons_d & Input::BUTTON_B) {
         return false;
@@ -947,4 +1121,149 @@ bool ManageScreen::Update(Input &input) {
     }
     
     return true;
+}
+
+// 搜索相关方法实现
+
+void ManageScreen::DrawSearchBox() {
+    const int boxX = 100;
+    const int boxY = 150;
+    const int boxW = 1520;  // 增加宽度
+    const int boxH = 70;
+    
+    // 绘制搜索框背景
+    SDL_Color bgColor = Gfx::COLOR_CARD_BG;
+    Gfx::DrawRectRounded(boxX, boxY, boxW, boxH, 12, bgColor);
+    
+    // 绘制边框
+    SDL_Color borderColor = mSearchActive ? Gfx::COLOR_ACCENT : Gfx::COLOR_ALT_TEXT;
+    borderColor.a = mSearchActive ? 200 : 100;
+    Gfx::DrawRectRoundedOutline(boxX, boxY, boxW, boxH, 12, 2, borderColor);
+    
+    // 绘制搜索图标
+    Gfx::DrawIcon(boxX + 30, boxY + boxH/2, 32, Gfx::COLOR_ALT_TEXT, 0xf002, Gfx::ALIGN_VERTICAL);
+    
+    // 绘制搜索文本或提示
+    if (mSearchText.empty()) {
+        std::string hintText = std::string("") + _("download.search_hint");
+        Gfx::Print(boxX + 80, boxY + boxH/2, 32, Gfx::COLOR_ALT_TEXT, 
+                  hintText.c_str(), Gfx::ALIGN_VERTICAL);
+    } else {
+        Gfx::Print(boxX + 80, boxY + boxH/2, 32, Gfx::COLOR_TEXT, 
+                  mSearchText.c_str(), Gfx::ALIGN_VERTICAL);
+    }
+    
+    // 如果有搜索文本，显示清除按钮
+    if (!mSearchText.empty()) {
+        const int clearX = boxX + boxW - 200;
+        const int clearY = boxY + boxH/2;
+        SDL_Color clearColor = {160, 160, 160, 255}; // 灰色
+        Gfx::DrawIcon(clearX, clearY, 28, clearColor, 0xf00d, Gfx::ALIGN_VERTICAL);
+        Gfx::Print(clearX + 40, clearY, 28, clearColor, _("download.search_clear"), Gfx::ALIGN_VERTICAL);
+    }
+    
+    // 显示搜索结果计数
+    if (mSearchActive && !mSearchText.empty()) {
+        char countText[64];
+        snprintf(countText, sizeof(countText), "%zu %s", mFilteredIndices.size(), _("download.search_results").c_str());
+        Gfx::Print(boxX + boxW + 30, boxY + boxH/2, 28, Gfx::COLOR_ALT_TEXT, countText, Gfx::ALIGN_VERTICAL);
+    }
+}
+
+void ManageScreen::ShowKeyboard() {
+    FileLogger::GetInstance().LogInfo("[ManageScreen::ShowKeyboard] Opening keyboard");
+    
+    std::string result;
+    std::string hint = _("download.search_keyboard_hint");
+    if (SwkbdManager::GetInstance().ShowKeyboard(result, hint, mSearchText, 128)) {
+        // 用户按了确认
+        if (!result.empty()) {
+            mSearchText = result;
+            ApplySearch();
+            
+            // 重置选择
+            mSelectedIndex = 0;
+            mScrollOffset = 0;
+        }
+    } else {
+        // 用户取消
+        FileLogger::GetInstance().LogInfo("[ManageScreen::ShowKeyboard] User cancelled");
+    }
+}
+
+void ManageScreen::ApplySearch() {
+    mFilteredIndices.clear();
+    
+    if (mSearchText.empty()) {
+        mSearchActive = false;
+        return;
+    }
+    
+    mSearchActive = true;
+    
+    // 转换搜索文本为小写
+    std::string searchLower = mSearchText;
+    std::transform(searchLower.begin(), searchLower.end(), searchLower.begin(), ::tolower);
+    
+    // 检查是否是 T+ID 格式搜索
+    bool isIdSearch = false;
+    std::string searchId;
+    if (searchLower.length() >= 2 && searchLower[0] == 't') {
+        // 提取 T 后面的内容作为 ID
+        searchId = searchLower.substr(1);
+        isIdSearch = true;
+        FileLogger::GetInstance().LogInfo("[ManageScreen::ApplySearch] ID search mode: T%s", searchId.c_str());
+    }
+    
+    for (size_t i = 0; i < mThemes.size(); ++i) {
+        const auto& theme = mThemes[i];
+        
+        // 如果是 ID 搜索模式（T+ID）
+        if (isIdSearch && !theme.shortId.empty()) {
+            std::string shortIdLower = theme.shortId;
+            std::transform(shortIdLower.begin(), shortIdLower.end(), shortIdLower.begin(), ::tolower);
+            
+            // 完全匹配（例如 T1 只匹配 T1，不匹配 T123）
+            if (shortIdLower == searchId) {
+                FileLogger::GetInstance().LogInfo("[ManageScreen::ApplySearch] Matched ID: %s (theme: %s)", 
+                                                  theme.shortId.c_str(), theme.name.c_str());
+                mFilteredIndices.push_back(i);
+                continue;
+            }
+        }
+        
+        // 搜索主题名称
+        std::string nameLower = theme.name;
+        std::transform(nameLower.begin(), nameLower.end(), nameLower.begin(), ::tolower);
+        if (nameLower.find(searchLower) != std::string::npos) {
+            mFilteredIndices.push_back(i);
+            continue;
+        }
+        
+        // 搜索作者
+        std::string authorLower = theme.author;
+        std::transform(authorLower.begin(), authorLower.end(), authorLower.begin(), ::tolower);
+        if (authorLower.find(searchLower) != std::string::npos) {
+            mFilteredIndices.push_back(i);
+            continue;
+        }
+        
+        // 搜索标签
+        for (const auto& tag : theme.tags) {
+            std::string tagLower = tag;
+            std::transform(tagLower.begin(), tagLower.end(), tagLower.begin(), ::tolower);
+            if (tagLower.find(searchLower) != std::string::npos) {
+                mFilteredIndices.push_back(i);
+                break;
+            }
+        }
+    }
+    
+    FileLogger::GetInstance().LogInfo("[ManageScreen::ApplySearch] Search '%s' matched %zu themes", 
+                                      mSearchText.c_str(), mFilteredIndices.size());
+}
+
+bool ManageScreen::IsTouchInRect(int touchX, int touchY, int rectX, int rectY, int rectW, int rectH) {
+    return touchX >= rectX && touchX <= rectX + rectW &&
+           touchY >= rectY && touchY <= rectY + rectH;
 }

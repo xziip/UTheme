@@ -37,7 +37,7 @@ void AboutScreen::Draw() {
     int leftCardX = 100;
     int leftCardY = startY;
     int leftCardW = 850;
-    int leftCardH = 600;
+    int leftCardH = 660;  // 增加高度以容纳新增项目
     
     // 应用淡入透明度
     Gfx::SetGlobalAlpha(fadeAlpha);
@@ -80,6 +80,10 @@ void AboutScreen::Draw() {
     Gfx::Print(leftCardX + 60, yOff, 24, noteColor, _("about.minizip"), Gfx::ALIGN_VERTICAL);
     yOff += 30;
     Gfx::Print(leftCardX + 60, yOff, 24, noteColor, _("about.hips"), Gfx::ALIGN_VERTICAL);
+    yOff += 30;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, _("about.rapidjson"), Gfx::ALIGN_VERTICAL);
+    yOff += 30;
+    Gfx::Print(leftCardX + 60, yOff, 24, noteColor, _("about.nathaniel"), Gfx::ALIGN_VERTICAL);
     
     // 字体信息
     yOff += 50;

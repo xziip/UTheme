@@ -76,9 +76,4 @@ private:
     bool CreateDirectoryRecursive(const std::string& path);
     void ScanForBPSFiles(const std::string& basePath, const std::string& currentPath, 
                         std::vector<std::string>& bpsFiles);
-    
-    // NUS 下载支持
-    bool DownloadFromNUSAndRetry(const std::string& originalFilePath,
-                                 const std::vector<uint8_t>& patchData,
-                                 std::vector<uint8_t>& patchedData);
 };
