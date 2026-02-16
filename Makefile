@@ -32,8 +32,7 @@ include $(DEVKITPRO)/wut/share/wut_rules
 #-------------------------------------------------------------------------------
 TARGET		:=	UTheme
 BUILD		:=	build
-SOURCES		:=	source source/screens source/input source/utils source/utils/minizip \
-			source/utils/src/dec source/utils/src/dsp source/utils/src/utils
+SOURCES		:=	source source/screens source/input source/utils source/utils/minizip
 DATA		:=	data
 INCLUDES	:=	source include source/utils
 CONTENT		:=
