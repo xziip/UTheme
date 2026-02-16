@@ -9,7 +9,7 @@
       "maxDisplayCount": 1
     },
     {
-      "id": "help1",
+      "id": "help",
       "type": "info",
       "title": "Need Help?",
       "text": "\n If you have any issues or suggestions, \n feel free to open an issue on the GitHub repository.",
