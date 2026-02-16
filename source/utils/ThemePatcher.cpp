@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <fstream>
 #include <cstring>
+#include <filesystem>
 
 #define WII_U_MENU_JPN_TID 0x0005001010040000ULL
 #define WII_U_MENU_USA_TID 0x0005001010040100ULL
@@ -733,7 +734,8 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
     const std::string path = envPath + "/plugins/config/style-mii-u.json";
 
     // 尝试从安装信息获取主题名称
-    std::string themeName;
+    std::string installPath;
+    std::string themeFolderName;
     std::string installedInfoPath = std::string(INSTALLED_THEMES_ROOT) + "/" + themeID + ".json";
     
     FILE* jsonFile = fopen(installedInfoPath.c_str(), "r");
@@ -752,15 +754,19 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
         themeInfo.Parse(jsonContent.c_str());
         
         if (!themeInfo.HasParseError() && themeInfo.IsObject()) {
-            if (themeInfo.HasMember("themeName") && themeInfo["themeName"].IsString()) {
-                themeName = themeInfo["themeName"].GetString();
-                FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Got theme name from installed info: %s", themeName.c_str());
+            if (themeInfo.HasMember("installPath") && themeInfo["installPath"].IsString()) {
+                installPath = themeInfo["installPath"].GetString();
+                // Slight hack to get the correct path for StyleMiiU
+                themeFolderName = std::filesystem::path(installPath).filename().string();
+
+                FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Install Path: %s", installPath.c_str());
+                FileLogger::GetInstance().LogInfo("[SetCurrentTheme] Got theme name from installed info: %s", themeFolderName.c_str());
             }
         }
     }
     
     // 如果从installed info获取失败，尝试从主题目录的theme_info.json读取
-    if (themeName.empty()) {
+    if (themeFolderName.empty()) {
         FileLogger::GetInstance().LogInfo("[SetCurrentTheme] No installed info, searching theme directory for ID: %s", themeID.c_str());
         
         DIR* themesDir = opendir(THEMES_ROOT);
@@ -821,8 +827,8 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
                         
                         if (metaID == themeID) {
                             // 找到匹配的主题
-                            themeName = entry->d_name;
-                            FileLogger::GetInstance().LogInfo("[SetCurrentTheme] ✓ Found matching theme: %s", themeName.c_str());
+                            themeFolderName = entry->d_name;
+                            FileLogger::GetInstance().LogInfo("[SetCurrentTheme] ✓ Found matching theme: %s", themeFolderName.c_str());
                             break;
                         }
                     } else {
@@ -839,7 +845,7 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
         }
     }
     
-    if (themeName.empty()) {
+    if (themeFolderName.empty()) {
         FileLogger::GetInstance().LogError("Theme (%s) not found in installed info or theme directories", themeID.c_str());
         return false;
     }
@@ -870,7 +876,7 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
     }
     
     rapidjson::Value themeNameValue;
-    themeNameValue.SetString(themeName.c_str(), themeName.length(), root.GetAllocator());
+    themeNameValue.SetString(themeFolderName.c_str(), themeFolderName.length(), root.GetAllocator());
     if (root["storageitems"].HasMember("enabledThemes")) {
         root["storageitems"]["enabledThemes"] = themeNameValue;
     } else {
@@ -890,7 +896,7 @@ bool ThemePatcher::SetCurrentTheme(const std::string& themeID) {
     out << strbuf.GetString();
     out.close();
 
-    FileLogger::GetInstance().LogInfo("Successfully set %s as current StyleMiiU theme!", themeName.c_str());
+    FileLogger::GetInstance().LogInfo("Successfully set %s as current StyleMiiU theme!", themeFolderName.c_str());
     return true;
 }
 
