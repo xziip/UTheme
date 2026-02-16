@@ -13,7 +13,7 @@
 #include <algorithm>
 
 // libwebp 解码器
-#include "src/webp/decode.h"
+#include <webp/decode.h>
 
 // 静态成员初始化
 std::map<std::string, SDL_Texture*> ImageLoader::mTextureCache;
