@@ -32,8 +32,7 @@ include $(DEVKITPRO)/wut/share/wut_rules
 #-------------------------------------------------------------------------------
 TARGET		:=	UTheme
 BUILD		:=	build
-SOURCES		:=	source source/screens source/input source/utils source/utils/minizip \
-			source/utils/src/dec source/utils/src/dsp source/utils/src/utils
+SOURCES		:=	source source/screens source/input source/utils source/utils/minizip
 DATA		:=	data
 INCLUDES	:=	source include source/utils
 CONTENT		:=
@@ -44,11 +43,16 @@ DRC_SPLASH	:=	res/banner.png
 #-------------------------------------------------------------------------------
 # options for code generation
 #-------------------------------------------------------------------------------
-CURL_CFLAGS := $(shell $(PREFIX)pkg-config --cflags libcurl)
-CURL_LIBS := $(shell $(PREFIX)pkg-config --libs libcurl)
+PKG_CONFIG := $(PREFIX)pkg-config
 
-SDL2_CFLAGS := $(shell $(PREFIX)pkg-config --cflags sdl2 SDL2_mixer SDL2_image SDL2_ttf)
-SDL2_LIBS := $(shell $(PREFIX)pkg-config --libs sdl2 SDL2_mixer SDL2_image SDL2_ttf)
+CURL_CFLAGS := $(shell $(PKG_CONFIG) --cflags libcurl)
+CURL_LIBS := $(shell $(PKG_CONFIG) --libs libcurl)
+
+SDL2_CFLAGS := $(shell $(PKG_CONFIG) --cflags sdl2 SDL2_mixer SDL2_image SDL2_ttf)
+SDL2_LIBS := $(shell $(PKG_CONFIG) --libs sdl2 SDL2_mixer SDL2_image SDL2_ttf)
+
+WEBP_CFLAGS := $(shell $(PKG_CONFIG) --cflags libwebp)
+WEBP_LIBS := $(shell $(PKG_CONFIG) --libs libwebp)
 
 # Use the libmocha submodule.
 EXTERNAL_LIBMOCHA_DIR := $(TOPDIR)/external/libmocha
@@ -59,17 +63,20 @@ CFLAGS	:=	-Wall -O2 -ffunction-sections \
 		$(MACHDEP)
 
 CFLAGS	+=	$(INCLUDE) -D__WIIU__ -D__WUT__ \
-		-DWEBP_DISABLE_STATS \
-		-DWEBP_REDUCE_SIZE -DWEBP_REDUCE_CSP \
 		$(CURL_CFLAGS) \
-		$(SDL2_CFLAGS)
+		$(SDL2_CFLAGS) \
+		$(WEBP_CFLAGS)
 
 CXXFLAGS	:= $(CFLAGS)
 
 ASFLAGS	:=	$(ARCH)
 LDFLAGS	=	$(ARCH) $(RPXSPECS) -Wl,-Map,$(notdir $*.map) -Wl,--allow-multiple-definition
 
-LIBS	:=	-lmocha $(SDL2_LIBS) $(CURL_LIBS) -lharfbuzz -lwut
+LIBS	:=	-lmocha \
+		$(SDL2_LIBS) \
+		$(CURL_LIBS) \
+		$(WEBP_LIBS) \
+		-lwut
 
 #-------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level
